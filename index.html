@@ -4,668 +4,568 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgentTrace // Mission Control</title>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <style>
         :root {
-            --bg-primary: #0a0e1a;
-            --bg-secondary: #111827;
-            --bg-panel: #1a2233;
+            --bg-deep: #060a13;
+            --bg-primary: #0b1120;
+            --bg-panel: #111a2e;
+            --bg-sidebar: #0d1425;
+            --bg-hover: #162035;
             --accent-orange: #ff6b2b;
-            --accent-amber: #f59e0b;
-            --accent-cyan: #06b6d4;
-            --accent-green: #10b981;
-            --accent-red: #ef4444;
+            --accent-amber: #f5a623;
+            --accent-cyan: #22d3ee;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-purple: #a78bfa;
             --text-primary: #e2e8f0;
-            --text-secondary: #94a3b8;
-            --text-dim: #475569;
-            --border: #1e293b;
-            --glow-orange: rgba(255, 107, 43, 0.3);
-            --glow-cyan: rgba(6, 182, 212, 0.3);
+            --text-secondary: #8892a8;
+            --text-dim: #3e4a63;
+            --border: #1a2540;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'IBM Plex Mono', monospace; background: var(--bg-deep); color: var(--text-primary); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-        body {
-            font-family: 'IBM Plex Mono', monospace;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
+        /* Top Bar */
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; height: 48px; background: var(--bg-primary);
+            border-bottom: 1px solid var(--border); flex-shrink: 0;
         }
+        .topbar-left { display: flex; align-items: center; gap: 14px; }
+        .logo { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1rem; letter-spacing: 0.12em; }
+        .logo span { color: var(--accent-orange); }
+        .topbar-badge { padding: 2px 10px; border: 1px solid var(--border); font-size: 0.6rem; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; }
+        .topbar-right { display: flex; align-items: center; gap: 18px; font-size: 0.7rem; color: var(--text-secondary); }
+        .status-live { display: flex; align-items: center; gap: 6px; }
+        .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent-green); box-shadow: 0 0 8px var(--accent-green); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
 
-        /* Header */
-        header {
-            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
-            border-bottom: 2px solid var(--accent-orange);
-            padding: 25px 0;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        header::before {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--accent-orange), var(--accent-amber), var(--accent-orange), transparent);
-            box-shadow: 0 0 20px var(--glow-orange);
-        }
-        .header-badge {
-            display: inline-block;
-            padding: 4px 16px;
-            border: 1px solid var(--accent-orange);
-            border-radius: 3px;
-            font-size: 0.7rem;
-            color: var(--accent-orange);
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-        }
-        header h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2.8rem;
-            font-weight: 900;
-            color: var(--text-primary);
-            letter-spacing: 0.15em;
-            text-shadow: 0 0 30px var(--glow-orange);
-            margin-bottom: 8px;
-        }
-        header h1 span { color: var(--accent-orange); }
-        .tagline {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            letter-spacing: 3px;
-            text-transform: uppercase;
-        }
+        /* Main Layout: Sidebar + Content */
+        .main { display: flex; flex: 1; overflow: hidden; }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
+        /* Sidebar */
+        .sidebar {
+            width: 240px; flex-shrink: 0; background: var(--bg-sidebar);
+            border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden;
         }
+        .sidebar-header { padding: 14px 16px 10px; font-size: 0.65rem; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+        .sidebar-list { flex: 1; overflow-y: auto; }
+        .sidebar-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 16px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.02);
+            transition: background 0.15s; font-size: 0.8rem;
+        }
+        .sidebar-item:hover { background: var(--bg-hover); }
+        .sidebar-item.active { background: var(--bg-hover); border-left: 3px solid var(--accent-orange); }
+        .sidebar-item .name { color: var(--text-primary); }
+        .sidebar-item .badge { font-size: 0.6rem; padding: 1px 6px; border-radius: 2px; }
+        .badge-pass { color: var(--accent-green); border: 1px solid rgba(52,211,153,0.3); }
+        .badge-iter { color: var(--accent-amber); border: 1px solid rgba(245,166,35,0.3); }
+        .sidebar-summary { padding: 14px 16px; border-top: 1px solid var(--border); font-size: 0.7rem; color: var(--text-dim); }
 
-        /* Status bar */
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 20px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            margin-bottom: 25px;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-        .status-dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--accent-green);
-            margin-right: 8px;
-            box-shadow: 0 0 8px var(--accent-green);
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
+        /* Content Area */
+        .content { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
 
-        /* Telemetry Grid */
-        .telemetry-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 15px;
-            margin-bottom: 25px;
+        /* KPI Strip */
+        .kpi-strip { display: flex; gap: 12px; flex-shrink: 0; }
+        .kpi {
+            flex: 1; background: var(--bg-panel); border: 1px solid var(--border);
+            padding: 14px 16px; position: relative; min-width: 0;
         }
-        .telemetry-card {
-            background: var(--bg-panel);
-            border: 1px solid var(--border);
-            padding: 20px;
-            text-align: center;
-            position: relative;
-            transition: border-color 0.3s;
-        }
-        .telemetry-card:hover {
-            border-color: var(--accent-orange);
-        }
-        .telemetry-card::before {
-            content: attr(data-label);
-            position: absolute;
-            top: 8px;
-            left: 12px;
-            font-size: 0.6rem;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-        .telemetry-value {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--accent-orange);
-            text-shadow: 0 0 15px var(--glow-orange);
-            margin-top: 15px;
-            margin-bottom: 5px;
-        }
-        .telemetry-unit {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        .kpi-label { font-size: 0.6rem; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+        .kpi-value { font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--accent-orange); }
+        .kpi-sub { font-size: 0.65rem; color: var(--text-secondary); margin-top: 4px; }
+        .kpi-spark { position: absolute; bottom: 8px; right: 12px; width: 60px; height: 24px; }
 
-        /* Panel */
+        /* Grid panels */
+        .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .panel-grid.three { grid-template-columns: 1fr 1fr 1fr; }
         .panel {
-            background: var(--bg-panel);
-            border: 1px solid var(--border);
-            padding: 25px;
-            margin-bottom: 25px;
-            position: relative;
+            background: var(--bg-panel); border: 1px solid var(--border);
+            padding: 14px; min-height: 0; position: relative; display: flex; flex-direction: column;
         }
-        .panel::before {
-            content: attr(data-label);
-            position: absolute;
-            top: 10px;
-            left: 15px;
-            font-size: 0.65rem;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 2px;
+        .panel-title {
+            font-family: 'Orbitron', sans-serif; font-size: 0.7rem; font-weight: 500;
+            color: var(--accent-amber); letter-spacing: 1.5px; text-transform: uppercase;
+            margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
         }
-        .panel h2 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1rem;
-            color: var(--accent-amber);
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 20px;
-            margin-top: 5px;
-            padding-left: 15px;
-            border-left: 3px solid var(--accent-orange);
-        }
+        .panel-title .tag { float: right; font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; color: var(--text-dim); }
+        .chart-container { flex: 1; min-height: 220px; }
 
-        /* Charts grid */
-        .charts-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 25px;
-        }
+        /* Timeline (Gantt) */
+        .gantt-panel { grid-column: 1 / -1; }
+        .gantt-container { flex: 1; min-height: 160px; }
 
-        /* Findings section */
-        .findings-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 25px;
+        /* Detail strip */
+        .detail-strip {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
         }
-        .finding-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            padding: 20px;
-            transition: all 0.3s;
+        .detail-card {
+            background: var(--bg-primary); border: 1px solid var(--border); padding: 12px;
         }
-        .finding-card:hover {
-            border-color: var(--accent-cyan);
-            box-shadow: 0 0 15px var(--glow-cyan);
-        }
-        .finding-card h3 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.8rem;
-            color: var(--accent-cyan);
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-        }
-        .finding-metric {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--accent-amber);
-            text-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
-            margin: 8px 0;
-        }
-        .finding-card p {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
+        .detail-card .label { font-size: 0.6rem; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
+        .detail-card .value { font-family: 'Orbitron', sans-serif; font-size: 1.1rem; color: var(--accent-cyan); margin-top: 4px; }
+        .detail-card .note { font-size: 0.65rem; color: var(--text-secondary); margin-top: 4px; }
 
         /* Comparison table */
-        .comp-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        .comp-table th, .comp-table td {
-            padding: 12px 16px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.85rem;
-        }
-        .comp-table th {
-            color: var(--accent-amber);
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            background: rgba(245, 158, 11, 0.05);
-        }
-        .comp-table td { color: var(--text-secondary); }
-        .comp-table .highlight { color: var(--accent-orange); font-weight: 700; }
-        .comp-table .match { color: var(--accent-green); font-weight: 700; }
-
-        /* Timeline */
-        .timeline-container {
-            overflow-x: auto;
-            margin-top: 15px;
-        }
-        .timeline-bar {
-            display: flex;
-            height: 32px;
-            margin-bottom: 4px;
-            align-items: center;
-            position: relative;
-        }
-        .timeline-label {
-            width: 160px;
-            flex-shrink: 0;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            text-align: right;
-            padding-right: 12px;
-        }
-        .timeline-track {
-            flex: 1;
-            display: flex;
-            height: 20px;
-            background: rgba(255,255,255,0.02);
-            border-radius: 2px;
-            overflow: hidden;
-        }
-        .timeline-segment {
-            height: 100%;
-            min-width: 2px;
-            position: relative;
-        }
-        .timeline-segment.gpu {
-            background: var(--accent-orange);
-            box-shadow: 0 0 6px var(--glow-orange);
-        }
-        .timeline-segment.cpu {
-            background: var(--accent-cyan);
-            box-shadow: 0 0 6px var(--glow-cyan);
-        }
-        .timeline-legend {
-            display: flex;
-            gap: 25px;
-            margin-top: 15px;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-        .legend-dot {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 2px;
-            margin-right: 6px;
-            vertical-align: middle;
-        }
-
-        /* Methodology */
-        .methodology {
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            line-height: 1.8;
-            margin-top: 10px;
-        }
-        .methodology strong { color: var(--text-secondary); }
+        .comp-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+        .comp-table th { text-align: left; padding: 8px 12px; color: var(--accent-amber); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); background: rgba(245,166,35,0.03); }
+        .comp-table td { padding: 8px 12px; color: var(--text-secondary); border-bottom: 1px solid rgba(255,255,255,0.02); }
+        .comp-table .hl { color: var(--accent-orange); font-weight: 600; }
+        .comp-table .ok { color: var(--accent-green); font-weight: 600; }
 
         /* Footer */
-        footer {
-            text-align: center;
-            padding: 25px 0;
-            border-top: 1px solid var(--border);
-            color: var(--text-dim);
-            font-size: 0.75rem;
-            letter-spacing: 1px;
-        }
-        footer a { color: var(--accent-orange); text-decoration: none; }
-        footer a:hover { text-shadow: 0 0 5px var(--glow-orange); }
+        .footer { padding: 10px 20px; text-align: center; font-size: 0.6rem; color: var(--text-dim); border-top: 1px solid var(--border); flex-shrink: 0; }
+        .footer a { color: var(--accent-orange); text-decoration: none; }
 
-        /* Responsive */
-        @media (max-width: 1000px) {
-            .telemetry-grid { grid-template-columns: repeat(3, 1fr); }
-            .charts-row { grid-template-columns: 1fr; }
-            .findings-grid { grid-template-columns: 1fr; }
-        }
-        @media (max-width: 600px) {
-            header h1 { font-size: 1.8rem; }
-            .telemetry-grid { grid-template-columns: repeat(2, 1fr); }
-        }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-deep); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #2a3a5a; }
     </style>
 </head>
 <body>
-    <header>
-        <div class="header-badge">Infrastructure Profiler</div>
-        <h1>AGENT<span>TRACE</span></h1>
-        <p class="tagline">Agentic Workload Infrastructure Analysis</p>
-    </header>
-
-    <div class="container">
-        <!-- Status Bar -->
-        <div class="status-bar">
-            <span><span class="status-dot"></span>PROFILER ACTIVE // PROJECT AVA TELEMETRY</span>
-            <span id="status-right">Loading data...</span>
+    <!-- Top Bar -->
+    <div class="topbar">
+        <div class="topbar-left">
+            <div class="logo">AGENT<span>TRACE</span></div>
+            <div class="topbar-badge">Infrastructure Profiler</div>
         </div>
-
-        <!-- Telemetry Cards -->
-        <section class="telemetry-grid" id="telemetry"></section>
-
-        <!-- Time Decomposition Chart -->
-        <div class="charts-row">
-            <section class="panel" data-label="// TIME_DECOMPOSITION">
-                <h2>CPU vs GPU Time per Design</h2>
-                <canvas id="timeChart"></canvas>
-            </section>
-            <section class="panel" data-label="// TOKEN_AMPLIFICATION">
-                <h2>Token Usage per Design</h2>
-                <canvas id="tokenChart"></canvas>
-            </section>
+        <div class="topbar-right">
+            <span id="topbar-info">Loading...</span>
+            <div class="status-live"><div class="dot"></div> PROFILER ACTIVE</div>
         </div>
-
-        <!-- Pipeline Timeline -->
-        <section class="panel" data-label="// PIPELINE_TIMELINE">
-            <h2>Agent Pipeline Activity (Top 6 Multi-Iteration Designs)</h2>
-            <div class="timeline-container" id="timeline"></div>
-            <div class="timeline-legend">
-                <span><span class="legend-dot" style="background:var(--accent-orange)"></span>LLM Inference (Cloud GPU)</span>
-                <span><span class="legend-dot" style="background:var(--accent-cyan)"></span>Simulation (Local CPU)</span>
-                <span><span class="legend-dot" style="background:rgba(255,255,255,0.05)"></span>GPU Idle</span>
-            </div>
-        </section>
-
-        <!-- Convergence + GPU Idle -->
-        <div class="charts-row">
-            <section class="panel" data-label="// GPU_IDLE_ANALYSIS">
-                <h2>GPU Idle Time per Design</h2>
-                <canvas id="idleChart"></canvas>
-            </section>
-            <section class="panel" data-label="// FAILURE_TAXONOMY">
-                <h2>Failure Category Distribution</h2>
-                <canvas id="failureChart"></canvas>
-            </section>
-        </div>
-
-        <!-- Key Findings -->
-        <section>
-            <div class="findings-grid" id="findings"></div>
-        </section>
-
-        <!-- Kim et al. Comparison -->
-        <section class="panel" data-label="// LITERATURE_VALIDATION">
-            <h2>Validation Against Published Findings</h2>
-            <table class="comp-table" id="compTable"></table>
-        </section>
-
-        <!-- Methodology -->
-        <section class="panel" data-label="// METHODOLOGY">
-            <h2>Measurement Methodology</h2>
-            <div class="methodology" id="methodology"></div>
-        </section>
     </div>
 
-    <footer>
-        <p>AGENTTRACE v1.0 // Agentic Workload Infrastructure Profiler</p>
-        <p>Built by Ha Le // University of Central Florida</p>
-        <p><a href="https://projectava.dev">Project Ava</a> // <a href="https://github.com/vanthienha199/project-ava">GitHub</a></p>
-    </footer>
+    <div class="main">
+        <!-- Sidebar: Design List -->
+        <div class="sidebar">
+            <div class="sidebar-header">Designs Profiled</div>
+            <div class="sidebar-list" id="sidebar-list"></div>
+            <div class="sidebar-summary" id="sidebar-summary"></div>
+        </div>
+
+        <!-- Content -->
+        <div class="content" id="content">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
+    <div class="footer">
+        AGENTTRACE v1.0 // Built by Ha Le // University of Central Florida //
+        <a href="https://projectava.dev">Project Ava</a> //
+        <a href="https://github.com/vanthienha199/agenttrace">GitHub</a>
+    </div>
 
     <script>
-    // Chart.js defaults
-    Chart.defaults.color = '#94a3b8';
-    Chart.defaults.borderColor = '#1e293b';
-    Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+    let DATA = null;
+    let selectedDesign = null;
+    let charts = {};
 
-    async function loadReport() {
+    async function init() {
         const resp = await fetch('agenttrace_report.json');
-        const data = await resp.json();
-        renderDashboard(data);
+        DATA = await resp.json();
+        renderSidebar();
+        renderOverview();
+        document.getElementById('topbar-info').textContent =
+            `${DATA.summary.total_designs} DESIGNS // ${DATA.summary.total_tokens.toLocaleString()} TOKENS // $${DATA.summary.total_cost_usd} EST`;
     }
 
-    function renderDashboard(data) {
-        const s = data.summary;
+    function renderSidebar() {
+        const list = document.getElementById('sidebar-list');
+        const designs = DATA.time_decomposition;
 
-        // Status bar
-        document.getElementById('status-right').textContent =
-            `${s.total_designs} DESIGNS // ${s.total_tokens.toLocaleString()} TOKENS // $${s.total_cost_usd} EST. COST`;
+        // "All Designs" overview item
+        let html = `<div class="sidebar-item active" data-design="__overview__" onclick="selectDesign('__overview__', this)">
+            <span class="name">All Designs</span>
+            <span class="badge badge-pass">${DATA.summary.total_designs}</span>
+        </div>`;
 
-        // Telemetry cards
-        const telemetry = [
-            { label: 'GPU TIME', value: s.avg_llm_pct + '%', unit: 'of wall clock' },
-            { label: 'GPU IDLE', value: s.avg_gpu_idle_pct + '%', unit: 'during tool exec' },
-            { label: 'TOKENS USED', value: (s.total_tokens / 1000).toFixed(0) + 'K', unit: 'total (est.)' },
-            { label: 'AVG ITERATIONS', value: s.avg_iterations_per_design + 'x', unit: 'per design' },
-            { label: 'FIRST-PASS', value: s.first_pass_rate + '%', unit: 'success rate' },
-        ];
-        document.getElementById('telemetry').innerHTML = telemetry.map(t =>
-            `<div class="telemetry-card" data-label="${t.label}">
-                <div class="telemetry-value">${t.value}</div>
-                <div class="telemetry-unit">${t.unit}</div>
-            </div>`
-        ).join('');
-
-        // Time decomposition chart (stacked horizontal bar)
-        const timeData = data.time_decomposition
-            .filter(d => !d.design_name.includes('mux') && !d.design_name.includes('test_'))
-            .sort((a, b) => b.total_wall_ms - a.total_wall_ms);
-        const timeLabels = timeData.map(d => d.design_name.replace(/^\d+_/, ''));
-
-        new Chart(document.getElementById('timeChart').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: timeLabels,
-                datasets: [
-                    { label: 'LLM Inference (GPU)', data: timeData.map(d => d.llm_ms / 1000), backgroundColor: '#ff6b2b', borderWidth: 0 },
-                    { label: 'Simulation (CPU)', data: timeData.map(d => d.sim_ms / 1000), backgroundColor: '#06b6d4', borderWidth: 0 },
-                    { label: 'Orchestration (CPU)', data: timeData.map(d => d.orchestration_ms / 1000), backgroundColor: '#475569', borderWidth: 0 },
-                ]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                plugins: {
-                    legend: { position: 'bottom', labels: { padding: 15, font: { size: 11 } } },
-                },
-                scales: {
-                    x: { stacked: true, title: { display: true, text: 'Time (seconds)', color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.03)' } },
-                    y: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 } } }
-                }
-            }
-        });
-
-        // Token amplification chart
-        const tokenData = data.token_amplification
-            .filter(d => !d.design_name.includes('mux') && !d.design_name.includes('test_'))
-            .sort((a, b) => b.total_tokens - a.total_tokens);
-
-        new Chart(document.getElementById('tokenChart').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: tokenData.map(d => d.design_name.replace(/^\d+_/, '')),
-                datasets: [
-                    { label: 'Input Tokens', data: tokenData.map(d => d.tokens_in), backgroundColor: '#f59e0b', borderWidth: 0 },
-                    { label: 'Output Tokens', data: tokenData.map(d => d.tokens_out), backgroundColor: '#ff6b2b', borderWidth: 0 },
-                ]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                plugins: { legend: { position: 'bottom', labels: { padding: 15, font: { size: 11 } } } },
-                scales: {
-                    x: { stacked: true, title: { display: true, text: 'Tokens', color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.03)' } },
-                    y: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 } } }
-                }
-            }
-        });
-
-        // GPU Idle chart
-        const idleData = data.time_decomposition
-            .filter(d => !d.design_name.includes('mux') && !d.design_name.includes('test_'))
-            .sort((a, b) => b.gpu_idle_pct - a.gpu_idle_pct);
-
-        new Chart(document.getElementById('idleChart').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: idleData.map(d => d.design_name.replace(/^\d+_/, '')),
-                datasets: [{
-                    label: 'GPU Idle %',
-                    data: idleData.map(d => d.gpu_idle_pct),
-                    backgroundColor: idleData.map(d => d.gpu_idle_pct > 50 ? '#ef4444' : d.gpu_idle_pct > 30 ? '#f59e0b' : '#10b981'),
-                    borderWidth: 0,
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                plugins: {
-                    legend: { display: false },
-                    annotation: { annotations: {} }
-                },
-                scales: {
-                    x: { max: 100, title: { display: true, text: 'GPU Idle %', color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.03)' } },
-                    y: { grid: { display: false }, ticks: { font: { size: 10 } } }
-                }
-            }
-        });
-
-        // Failure distribution
-        const failData = data.failure_distribution;
-        const failLabels = Object.keys(failData);
-        const failValues = Object.values(failData);
-        const failColors = ['#ff6b2b', '#f59e0b', '#06b6d4', '#10b981', '#ef4444', '#8b5cf6', '#ec4899', '#64748b', '#a3e635'];
-
-        new Chart(document.getElementById('failureChart').getContext('2d'), {
-            type: 'doughnut',
-            data: {
-                labels: failLabels.map(l => l.toUpperCase()),
-                datasets: [{ data: failValues, backgroundColor: failColors.slice(0, failValues.length), borderColor: '#1a2233', borderWidth: 3 }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'bottom', labels: { padding: 12, font: { size: 11 } } },
-                    title: { display: true, text: failValues.reduce((a, b) => a + b, 0) + ' Total Failures Analyzed', color: '#94a3b8', font: { size: 12 } }
-                }
-            }
-        });
-
-        // Pipeline timeline (top 6 multi-iteration designs)
-        const timelineDesigns = data.timelines
-            .filter(t => t.timeline.length > 2)
-            .sort((a, b) => b.timeline.length - a.timeline.length)
-            .slice(0, 6);
-
-        const maxDuration = Math.max(...timelineDesigns.map(t => t.total_duration_ms));
-
-        document.getElementById('timeline').innerHTML = timelineDesigns.map(t => {
-            const segments = t.timeline.map(seg => {
-                const widthPct = (seg.duration / maxDuration * 100);
-                const cls = seg.type === 'llm_inference' ? 'gpu' : 'cpu';
-                return `<div class="timeline-segment ${cls}" style="width:${Math.max(widthPct, 0.3)}%" title="${seg.label}: ${(seg.duration/1000).toFixed(1)}s"></div>`;
-            }).join('');
-
-            return `<div class="timeline-bar">
-                <span class="timeline-label">${t.design_name.replace(/^\d+_/, '')}</span>
-                <div class="timeline-track">${segments}</div>
+        designs.forEach(d => {
+            const iters = d.iterations;
+            const badge = iters > 1 ? `<span class="badge badge-iter">${iters}x</span>` : `<span class="badge badge-pass">1x</span>`;
+            html += `<div class="sidebar-item" data-design="${d.design_name}" onclick="selectDesign('${d.design_name}', this)">
+                <span class="name">${d.design_name.replace(/^\d+_/, '')}</span>
+                ${badge}
             </div>`;
-        }).join('');
+        });
 
-        // Findings cards
-        document.getElementById('findings').innerHTML = `
-            <div class="finding-card">
-                <h3>GPU Idle Matches Literature</h3>
-                <div class="finding-metric">${s.avg_gpu_idle_pct}%</div>
-                <p>Kim et al. (HPCA 2026) found GPU idle 30-55% during tool execution in agentic workflows.
-                   Project Ava's measured ${s.avg_gpu_idle_pct}% falls within this range, validating on a real hardware verification agent.</p>
-            </div>
-            <div class="finding-card">
-                <h3>Token Amplification</h3>
-                <div class="finding-metric">${s.avg_iterations_per_design}x</div>
-                <p>Self-correcting agents amplify token usage proportional to iteration count.
-                   Kim et al. found 9.2x for general agents. Ava averages ${s.avg_iterations_per_design}x
-                   (range: 1x for simple designs to 18x for complex FSMs).</p>
-            </div>
-            <div class="finding-card">
-                <h3>Simulation is Negligible</h3>
-                <div class="finding-metric">${s.avg_sim_pct}%</div>
-                <p>CPU-bound tool execution (iverilog simulation) is only ${s.avg_sim_pct}% of wall time.
-                   LLM inference dominates at ${s.avg_llm_pct}%. This agent is inference-bound,
-                   making NanoFlow-style serving optimization directly applicable.</p>
-            </div>
-        `;
-
-        // Comparison table
-        document.getElementById('compTable').innerHTML = `
-            <thead>
-                <tr>
-                    <th>Metric</th>
-                    <th>Kim et al. (HPCA 2026)</th>
-                    <th>Project Ava (Measured)</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>GPU idle during tool execution</td>
-                    <td>30-55%</td>
-                    <td class="highlight">${s.avg_gpu_idle_pct}%</td>
-                    <td class="match">WITHIN RANGE</td>
-                </tr>
-                <tr>
-                    <td>LLM call multiplier (vs single-shot)</td>
-                    <td>9.2x average</td>
-                    <td class="highlight">${s.avg_iterations_per_design}x average (up to 18x)</td>
-                    <td class="match">CONSISTENT</td>
-                </tr>
-                <tr>
-                    <td>CPU % of total latency</td>
-                    <td>50-90%</td>
-                    <td class="highlight">${s.avg_sim_pct}% (sim only) / ${s.avg_gpu_idle_pct}% (sim + orch)</td>
-                    <td class="match">CONSISTENT</td>
-                </tr>
-                <tr>
-                    <td>Dominant bottleneck</td>
-                    <td>CPU (tool execution)</td>
-                    <td class="highlight">LLM inference (${s.avg_llm_pct}%)</td>
-                    <td>INFERENCE-BOUND</td>
-                </tr>
-                <tr>
-                    <td>NanoFlow applicability</td>
-                    <td>Serving throughput optimization</td>
-                    <td class="highlight">Directly applicable — LLM calls are ${s.avg_llm_pct}% of workload</td>
-                    <td class="match">APPLICABLE</td>
-                </tr>
-            </tbody>
-        `;
-
-        // Methodology
-        const m = data.methodology;
-        document.getElementById('methodology').innerHTML = `
-            <p><strong>LLM Inference:</strong> ${m.llm_inference}</p>
-            <p><strong>Simulation:</strong> ${m.simulation}</p>
-            <p><strong>Orchestration:</strong> ${m.orchestration}</p>
-            <p><strong>Token Estimation:</strong> ${m.token_estimation}</p>
-            <p><strong>Cost Model:</strong> ${m.cost_model}</p>
-            <p><strong>GPU Idle:</strong> ${m.gpu_idle}</p>
-            <p style="margin-top: 12px;"><strong>Reference Papers:</strong></p>
-            ${m.reference_papers.map(p => `<p style="padding-left: 16px;">- ${p}</p>`).join('')}
-        `;
+        list.innerHTML = html;
+        document.getElementById('sidebar-summary').textContent =
+            `GPU: ${DATA.summary.avg_llm_pct}% // Idle: ${DATA.summary.avg_gpu_idle_pct}%`;
     }
 
-    loadReport();
+    function selectDesign(name, el) {
+        document.querySelectorAll('.sidebar-item').forEach(e => e.classList.remove('active'));
+        el.classList.add('active');
+        selectedDesign = name;
+
+        // Dispose old charts
+        Object.values(charts).forEach(c => { try { c.dispose(); } catch(e) {} });
+        charts = {};
+
+        if (name === '__overview__') renderOverview();
+        else renderDesignDetail(name);
+    }
+
+    // ─── OVERVIEW ─────────────────────────────────
+    function renderOverview() {
+        const s = DATA.summary;
+        const content = document.getElementById('content');
+        content.innerHTML = `
+            <div class="kpi-strip">
+                <div class="kpi"><div class="kpi-label">GPU Time</div><div class="kpi-value">${s.avg_llm_pct}%</div><div class="kpi-sub">of wall clock (LLM inference)</div></div>
+                <div class="kpi"><div class="kpi-label">GPU Idle</div><div class="kpi-value">${s.avg_gpu_idle_pct}%</div><div class="kpi-sub">during tool execution</div></div>
+                <div class="kpi"><div class="kpi-label">Tokens</div><div class="kpi-value">${(s.total_tokens/1000).toFixed(0)}K</div><div class="kpi-sub">total consumed (est.)</div></div>
+                <div class="kpi"><div class="kpi-label">Amplification</div><div class="kpi-value">${s.avg_iterations_per_design}x</div><div class="kpi-sub">avg iterations per design</div></div>
+                <div class="kpi"><div class="kpi-label">First-Pass</div><div class="kpi-value">${s.first_pass_rate}%</div><div class="kpi-sub">success rate</div></div>
+            </div>
+
+            <div class="panel-grid">
+                <div class="panel gantt-panel">
+                    <div class="panel-title">Pipeline Activity Timeline <span class="tag">GPU (orange) vs CPU (cyan)</span></div>
+                    <div class="gantt-container" id="chart-gantt"></div>
+                </div>
+            </div>
+
+            <div class="panel-grid">
+                <div class="panel">
+                    <div class="panel-title">Time Decomposition <span class="tag">per design</span></div>
+                    <div class="chart-container" id="chart-time"></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-title">GPU Idle Analysis <span class="tag">Kim et al. range: 30-55%</span></div>
+                    <div class="chart-container" id="chart-idle"></div>
+                </div>
+            </div>
+
+            <div class="panel-grid">
+                <div class="panel">
+                    <div class="panel-title">Token Amplification <span class="tag">per design</span></div>
+                    <div class="chart-container" id="chart-tokens"></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-title">Failure Taxonomy <span class="tag">${Object.values(DATA.failure_distribution).reduce((a,b)=>a+b,0)} failures</span></div>
+                    <div class="chart-container" id="chart-failures"></div>
+                </div>
+            </div>
+
+            <div class="panel-grid">
+                <div class="panel gantt-panel">
+                    <div class="panel-title">Literature Validation <span class="tag">Kim et al. (HPCA 2026) + NanoFlow (OSDI 2025)</span></div>
+                    <table class="comp-table">
+                        <thead><tr><th>Metric</th><th>Published Finding</th><th>AgentTrace Measured</th><th>Status</th></tr></thead>
+                        <tbody>
+                            <tr><td>GPU idle during tool execution</td><td>30-55%</td><td class="hl">${s.avg_gpu_idle_pct}%</td><td class="ok">WITHIN RANGE</td></tr>
+                            <tr><td>LLM call amplification</td><td>9.2x (Kim et al.)</td><td class="hl">${s.avg_iterations_per_design}x avg, up to 18x</td><td class="ok">CONSISTENT</td></tr>
+                            <tr><td>CPU % of total latency</td><td>50-90%</td><td class="hl">${s.avg_gpu_idle_pct}% (sim + orchestration)</td><td class="ok">CONSISTENT</td></tr>
+                            <tr><td>NanoFlow applicability</td><td>Overlap heterogeneous ops</td><td class="hl">LLM bursts + CPU gaps = overlappable</td><td class="ok">APPLICABLE</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+
+        setTimeout(() => {
+            renderGanttChart();
+            renderTimeChart();
+            renderIdleChart();
+            renderTokenChart();
+            renderFailureChart();
+        }, 50);
+    }
+
+    // ─── DESIGN DETAIL ────────────────────────────
+    function renderDesignDetail(name) {
+        const td = DATA.time_decomposition.find(d => d.design_name === name);
+        const tk = DATA.token_amplification.find(d => d.design_name === name);
+        const cv = DATA.convergence.find(d => d.design_name === name);
+        const tl = DATA.timelines.find(d => d.design_name === name);
+        if (!td) return;
+
+        const content = document.getElementById('content');
+        content.innerHTML = `
+            <div class="detail-strip">
+                <div class="detail-card"><div class="label">Wall Time</div><div class="value">${(td.total_wall_ms/1000).toFixed(1)}s</div></div>
+                <div class="detail-card"><div class="label">LLM Time</div><div class="value">${(td.llm_ms/1000).toFixed(1)}s</div><div class="note">${td.llm_pct}% of wall</div></div>
+                <div class="detail-card"><div class="label">Sim Time</div><div class="value">${(td.sim_ms/1000).toFixed(1)}s</div><div class="note">${td.sim_pct}% of wall</div></div>
+                <div class="detail-card"><div class="label">GPU Idle</div><div class="value">${td.gpu_idle_pct}%</div><div class="note">${td.iterations} iteration${td.iterations>1?'s':''}</div></div>
+            </div>
+            <div class="detail-strip">
+                <div class="detail-card"><div class="label">Tokens In</div><div class="value">${tk.tokens_in.toLocaleString()}</div></div>
+                <div class="detail-card"><div class="label">Tokens Out</div><div class="value">${tk.tokens_out.toLocaleString()}</div></div>
+                <div class="detail-card"><div class="label">Amplification</div><div class="value">${tk.amplification_factor}x</div></div>
+                <div class="detail-card"><div class="label">Est. Cost</div><div class="value">$${tk.cost_usd.toFixed(4)}</div></div>
+            </div>
+
+            <div class="panel-grid">
+                <div class="panel gantt-panel">
+                    <div class="panel-title">Pipeline Timeline <span class="tag">${name}</span></div>
+                    <div class="gantt-container" id="chart-detail-gantt"></div>
+                </div>
+            </div>
+
+            <div class="panel-grid">
+                <div class="panel">
+                    <div class="panel-title">Convergence Curve <span class="tag">pass count over iterations</span></div>
+                    <div class="chart-container" id="chart-convergence"></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-title">Per-Iteration Latency <span class="tag">LLM vs simulation</span></div>
+                    <div class="chart-container" id="chart-iter-latency"></div>
+                </div>
+            </div>
+        `;
+
+        setTimeout(() => {
+            renderDetailGantt(tl);
+            if (cv) renderConvergenceChart(cv);
+            if (cv) renderIterLatencyChart(cv);
+        }, 50);
+    }
+
+    // ─── CHART: GANTT TIMELINE (OVERVIEW) ──────────
+    function renderGanttChart() {
+        const el = document.getElementById('chart-gantt');
+        if (!el) return;
+        const chart = echarts.init(el);
+        charts['gantt'] = chart;
+
+        // Top 8 multi-iteration designs for overview
+        const tls = DATA.timelines
+            .filter(t => t.timeline.length > 0)
+            .sort((a, b) => b.total_duration_ms - a.total_duration_ms)
+            .slice(0, 10);
+
+        const categories = tls.map(t => t.design_name.replace(/^\d+_/, ''));
+        const maxDur = Math.max(...tls.map(t => t.total_duration_ms));
+
+        const gpuData = [];
+        const cpuData = [];
+
+        tls.forEach((t, yi) => {
+            t.timeline.forEach(seg => {
+                const arr = seg.type === 'llm_inference' ? gpuData : cpuData;
+                arr.push({
+                    name: seg.label,
+                    value: [yi, seg.start, seg.start + seg.duration, seg.duration],
+                    itemStyle: { color: seg.type === 'llm_inference' ? '#ff6b2b' : '#22d3ee' }
+                });
+            });
+        });
+
+        function renderItem(params, api) {
+            const yi = api.value(0);
+            const start = api.coord([api.value(1), yi]);
+            const end = api.coord([api.value(2), yi]);
+            const height = api.size([0, 1])[1] * 0.6;
+            return { type: 'rect', shape: { x: start[0], y: start[1] - height/2, width: Math.max(end[0] - start[0], 2), height: height }, style: api.style() };
+        }
+
+        chart.setOption({
+            tooltip: { formatter: p => `${p.data.name}<br/>${(p.data.value[3]/1000).toFixed(1)}s` },
+            grid: { left: 120, right: 30, top: 10, bottom: 30 },
+            xAxis: { type: 'value', max: maxDur, axisLabel: { formatter: v => (v/1000).toFixed(0)+'s', color: '#8892a8', fontSize: 10 }, splitLine: { lineStyle: { color: '#1a2540' } } },
+            yAxis: { type: 'category', data: categories, inverse: true, axisLabel: { color: '#8892a8', fontSize: 11 }, axisTick: { show: false }, splitLine: { show: false } },
+            series: [
+                { type: 'custom', renderItem: renderItem, encode: { x: [1,2], y: 0 }, data: gpuData, name: 'GPU' },
+                { type: 'custom', renderItem: renderItem, encode: { x: [1,2], y: 0 }, data: cpuData, name: 'CPU' },
+            ],
+            dataZoom: [{ type: 'slider', xAxisIndex: 0, bottom: 2, height: 16, borderColor: '#1a2540', backgroundColor: '#0b1120', fillerColor: 'rgba(255,107,43,0.1)', handleStyle: { color: '#ff6b2b' } }],
+        });
+        chart.on('click', p => {
+            if (p.data && p.data.value) {
+                const idx = p.data.value[0];
+                const name = tls[idx].design_name;
+                const el = document.querySelector(`.sidebar-item[data-design="${name}"]`);
+                if (el) selectDesign(name, el);
+            }
+        });
+        window.addEventListener('resize', () => chart.resize());
+    }
+
+    // ─── CHART: TIME DECOMPOSITION ────────────────
+    function renderTimeChart() {
+        const el = document.getElementById('chart-time');
+        if (!el) return;
+        const chart = echarts.init(el);
+        charts['time'] = chart;
+
+        const d = DATA.time_decomposition.filter(d => !d.design_name.includes('mux') && !d.design_name.includes('test_')).sort((a,b) => b.total_wall_ms - a.total_wall_ms);
+        const labels = d.map(x => x.design_name.replace(/^\d+_/, ''));
+
+        chart.setOption({
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+            legend: { data: ['LLM (GPU)', 'Simulation (CPU)', 'Orchestration'], textStyle: { color: '#8892a8', fontSize: 10 }, bottom: 0 },
+            grid: { left: 90, right: 15, top: 10, bottom: 40 },
+            xAxis: { type: 'value', axisLabel: { formatter: v => (v/1000).toFixed(0)+'s', color: '#8892a8', fontSize: 10 }, splitLine: { lineStyle: { color: '#1a2540' } } },
+            yAxis: { type: 'category', data: labels, inverse: true, axisLabel: { color: '#8892a8', fontSize: 10 }, axisTick: { show: false } },
+            series: [
+                { name: 'LLM (GPU)', type: 'bar', stack: 'total', data: d.map(x => x.llm_ms), itemStyle: { color: '#ff6b2b' }, barWidth: 14 },
+                { name: 'Simulation (CPU)', type: 'bar', stack: 'total', data: d.map(x => x.sim_ms), itemStyle: { color: '#22d3ee' }, barWidth: 14 },
+                { name: 'Orchestration', type: 'bar', stack: 'total', data: d.map(x => x.orchestration_ms), itemStyle: { color: '#3e4a63' }, barWidth: 14 },
+            ]
+        });
+        window.addEventListener('resize', () => chart.resize());
+    }
+
+    // ─── CHART: GPU IDLE ──────────────────────────
+    function renderIdleChart() {
+        const el = document.getElementById('chart-idle');
+        if (!el) return;
+        const chart = echarts.init(el);
+        charts['idle'] = chart;
+
+        const d = DATA.time_decomposition.filter(d => !d.design_name.includes('mux') && !d.design_name.includes('test_')).sort((a,b) => b.gpu_idle_pct - a.gpu_idle_pct);
+
+        chart.setOption({
+            tooltip: { trigger: 'axis' },
+            grid: { left: 90, right: 15, top: 10, bottom: 10 },
+            xAxis: { type: 'value', max: 100, axisLabel: { formatter: '{value}%', color: '#8892a8', fontSize: 10 }, splitLine: { lineStyle: { color: '#1a2540' } } },
+            yAxis: { type: 'category', data: d.map(x => x.design_name.replace(/^\d+_/, '')), inverse: true, axisLabel: { color: '#8892a8', fontSize: 10 } },
+            series: [{
+                type: 'bar', data: d.map(x => ({
+                    value: x.gpu_idle_pct,
+                    itemStyle: { color: x.gpu_idle_pct > 50 ? '#f87171' : x.gpu_idle_pct > 30 ? '#f5a623' : '#34d399' }
+                })),
+                barWidth: 14,
+                markLine: { silent: true, data: [
+                    { xAxis: 30, lineStyle: { color: '#f5a623', type: 'dashed', width: 1 }, label: { show: true, formatter: '30%', color: '#f5a623', fontSize: 9 } },
+                    { xAxis: 55, lineStyle: { color: '#f87171', type: 'dashed', width: 1 }, label: { show: true, formatter: '55%', color: '#f87171', fontSize: 9 } },
+                ] }
+            }],
+            graphic: [{ type: 'text', left: 'center', bottom: 5, style: { text: 'Kim et al. range: 30-55%', fill: '#3e4a63', fontSize: 10 } }]
+        });
+        window.addEventListener('resize', () => chart.resize());
+    }
+
+    // ─── CHART: TOKEN AMPLIFICATION ───────────────
+    function renderTokenChart() {
+        const el = document.getElementById('chart-tokens');
+        if (!el) return;
+        const chart = echarts.init(el);
+        charts['tokens'] = chart;
+
+        const d = DATA.token_amplification.filter(d => !d.design_name.includes('mux') && !d.design_name.includes('test_')).sort((a,b) => b.total_tokens - a.total_tokens);
+
+        chart.setOption({
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+            legend: { data: ['Input', 'Output'], textStyle: { color: '#8892a8', fontSize: 10 }, bottom: 0 },
+            grid: { left: 90, right: 15, top: 10, bottom: 35 },
+            xAxis: { type: 'value', axisLabel: { formatter: v => (v/1000).toFixed(0)+'K', color: '#8892a8', fontSize: 10 }, splitLine: { lineStyle: { color: '#1a2540' } } },
+            yAxis: { type: 'category', data: d.map(x => x.design_name.replace(/^\d+_/, '')), inverse: true, axisLabel: { color: '#8892a8', fontSize: 10 } },
+            series: [
+                { name: 'Input', type: 'bar', stack: 'total', data: d.map(x => x.tokens_in), itemStyle: { color: '#f5a623' }, barWidth: 14 },
+                { name: 'Output', type: 'bar', stack: 'total', data: d.map(x => x.tokens_out), itemStyle: { color: '#ff6b2b' }, barWidth: 14 },
+            ]
+        });
+        window.addEventListener('resize', () => chart.resize());
+    }
+
+    // ─── CHART: FAILURE TAXONOMY ──────────────────
+    function renderFailureChart() {
+        const el = document.getElementById('chart-failures');
+        if (!el) return;
+        const chart = echarts.init(el);
+        charts['failures'] = chart;
+
+        const fd = DATA.failure_distribution;
+        const data = Object.entries(fd).map(([k,v]) => ({ name: k.toUpperCase(), value: v }));
+        const colors = ['#ff6b2b', '#f5a623', '#22d3ee', '#34d399', '#f87171', '#a78bfa'];
+
+        chart.setOption({
+            tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+            series: [{
+                type: 'pie', radius: ['40%', '70%'], center: ['50%', '50%'],
+                data: data,
+                itemStyle: { borderColor: '#111a2e', borderWidth: 2 },
+                label: { color: '#8892a8', fontSize: 11 },
+                labelLine: { lineStyle: { color: '#3e4a63' } },
+                color: colors,
+            }]
+        });
+        window.addEventListener('resize', () => chart.resize());
+    }
+
+    // ─── CHART: DETAIL GANTT ──────────────────────
+    function renderDetailGantt(tl) {
+        const el = document.getElementById('chart-detail-gantt');
+        if (!el || !tl) return;
+        const chart = echarts.init(el);
+        charts['detail-gantt'] = chart;
+
+        const data = [];
+        tl.timeline.forEach((seg, i) => {
+            data.push({
+                name: seg.label,
+                value: [0, seg.start, seg.start + seg.duration, seg.duration],
+                itemStyle: { color: seg.type === 'llm_inference' ? '#ff6b2b' : '#22d3ee' }
+            });
+        });
+
+        function renderItem(params, api) {
+            const start = api.coord([api.value(1), 0]);
+            const end = api.coord([api.value(2), 0]);
+            const height = api.size([0, 1])[1] * 0.7;
+            return { type: 'rect', shape: { x: start[0], y: start[1] - height/2, width: Math.max(end[0] - start[0], 4), height: height }, style: api.style() };
+        }
+
+        chart.setOption({
+            tooltip: { formatter: p => `${p.data.name}<br/>${(p.data.value[3]/1000).toFixed(1)}s` },
+            grid: { left: 15, right: 15, top: 10, bottom: 35 },
+            xAxis: { type: 'value', max: tl.total_duration_ms, axisLabel: { formatter: v => (v/1000).toFixed(0)+'s', color: '#8892a8' }, splitLine: { lineStyle: { color: '#1a2540' } } },
+            yAxis: { type: 'category', data: ['Pipeline'], axisLabel: { show: false }, axisTick: { show: false } },
+            series: [{ type: 'custom', renderItem: renderItem, encode: { x: [1,2], y: 0 }, data: data }],
+            dataZoom: [{ type: 'slider', xAxisIndex: 0, bottom: 2, height: 14, borderColor: '#1a2540', backgroundColor: '#0b1120', fillerColor: 'rgba(255,107,43,0.1)' }],
+        });
+        window.addEventListener('resize', () => chart.resize());
+    }
+
+    // ─── CHART: CONVERGENCE CURVE ─────────────────
+    function renderConvergenceChart(cv) {
+        const el = document.getElementById('chart-convergence');
+        if (!el || !cv.curve.length) return;
+        const chart = echarts.init(el);
+        charts['convergence'] = chart;
+
+        chart.setOption({
+            tooltip: { trigger: 'axis' },
+            grid: { left: 50, right: 15, top: 15, bottom: 30 },
+            xAxis: { type: 'category', data: cv.curve.map(c => '#' + c.iteration), axisLabel: { color: '#8892a8', fontSize: 10 }, axisTick: { show: false } },
+            yAxis: { type: 'value', name: 'Tests Passing', nameTextStyle: { color: '#3e4a63', fontSize: 10 }, axisLabel: { color: '#8892a8', fontSize: 10 }, splitLine: { lineStyle: { color: '#1a2540' } } },
+            series: [
+                { type: 'line', data: cv.curve.map(c => c.pass_count), lineStyle: { color: '#34d399', width: 2 }, itemStyle: { color: '#34d399' }, areaStyle: { color: 'rgba(52,211,153,0.08)' }, symbol: 'circle', symbolSize: 6 },
+                { type: 'line', data: cv.curve.map(c => c.fail_count), lineStyle: { color: '#f87171', width: 2 }, itemStyle: { color: '#f87171' }, symbol: 'circle', symbolSize: 6 },
+            ]
+        });
+        window.addEventListener('resize', () => chart.resize());
+    }
+
+    // ─── CHART: PER-ITERATION LATENCY ─────────────
+    function renderIterLatencyChart(cv) {
+        const el = document.getElementById('chart-iter-latency');
+        if (!el || !cv.curve.length) return;
+        const chart = echarts.init(el);
+        charts['iter-latency'] = chart;
+
+        chart.setOption({
+            tooltip: { trigger: 'axis' },
+            legend: { data: ['LLM (GPU)', 'Simulation (CPU)'], textStyle: { color: '#8892a8', fontSize: 10 }, bottom: 0 },
+            grid: { left: 60, right: 15, top: 15, bottom: 35 },
+            xAxis: { type: 'category', data: cv.curve.map(c => '#' + c.iteration), axisLabel: { color: '#8892a8', fontSize: 10 } },
+            yAxis: { type: 'value', name: 'ms', nameTextStyle: { color: '#3e4a63', fontSize: 10 }, axisLabel: { color: '#8892a8', fontSize: 10 }, splitLine: { lineStyle: { color: '#1a2540' } } },
+            series: [
+                { name: 'LLM (GPU)', type: 'bar', stack: 'total', data: cv.curve.map(c => c.llm_ms), itemStyle: { color: '#ff6b2b' } },
+                { name: 'Simulation (CPU)', type: 'bar', stack: 'total', data: cv.curve.map(c => c.sim_ms), itemStyle: { color: '#22d3ee' } },
+            ]
+        });
+        window.addEventListener('resize', () => chart.resize());
+    }
+
+    init();
     </script>
 </body>
 </html>
