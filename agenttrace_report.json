@@ -1,0 +1,2136 @@
+{
+  "version": "1.0",
+  "agent": "Project Ava",
+  "description": "Agentic workload infrastructure profile",
+  "summary": {
+    "total_designs": 20,
+    "total_wall_time_s": 6006.1,
+    "total_llm_time_s": 3405.5,
+    "total_sim_time_s": 34.1,
+    "total_orchestration_s": 2566.6,
+    "avg_llm_pct": 56.7,
+    "avg_sim_pct": 0.6,
+    "avg_gpu_idle_pct": 43.3,
+    "total_tokens": 518656,
+    "total_cost_usd": 4.31,
+    "total_iterations": 73,
+    "avg_iterations_per_design": 3.6,
+    "first_pass_rate": 40.0,
+    "designs_needing_correction": 12,
+    "avg_amplification": 3.6,
+    "kim_gpu_idle_finding": "30-55%",
+    "ava_gpu_idle_actual": 43.3,
+    "kim_llm_calls_multiplier": "9.2x",
+    "ava_avg_iterations": 3.6
+  },
+  "time_decomposition": [
+    {
+      "design_name": "01_adder",
+      "total_wall_ms": 14499.9,
+      "llm_ms": 13745.5,
+      "sim_ms": 746.5,
+      "orchestration_ms": 7.9,
+      "llm_pct": 94.8,
+      "sim_pct": 5.1,
+      "orchestration_pct": 0.1,
+      "gpu_idle_pct": 5.2,
+      "cpu_active_pct": 5.2,
+      "iterations": 1,
+      "corrections": 0
+    },
+    {
+      "design_name": "02_alu",
+      "total_wall_ms": 31543.9,
+      "llm_ms": 30878.0,
+      "sim_ms": 656.8,
+      "orchestration_ms": 9.0,
+      "llm_pct": 97.9,
+      "sim_pct": 2.1,
+      "orchestration_pct": 0.0,
+      "gpu_idle_pct": 2.1,
+      "cpu_active_pct": 2.1,
+      "iterations": 1,
+      "corrections": 0
+    },
+    {
+      "design_name": "03_icg",
+      "total_wall_ms": 35287.9,
+      "llm_ms": 34581.7,
+      "sim_ms": 691.9,
+      "orchestration_ms": 14.3,
+      "llm_pct": 98.0,
+      "sim_pct": 2.0,
+      "orchestration_pct": 0.0,
+      "gpu_idle_pct": 2.0,
+      "cpu_active_pct": 2.0,
+      "iterations": 1,
+      "corrections": 0
+    },
+    {
+      "design_name": "04_counter",
+      "total_wall_ms": 37979.0,
+      "llm_ms": 36461.4,
+      "sim_ms": 1500.1,
+      "orchestration_ms": 17.5,
+      "llm_pct": 96.0,
+      "sim_pct": 3.9,
+      "orchestration_pct": 0.0,
+      "gpu_idle_pct": 4.0,
+      "cpu_active_pct": 4.0,
+      "iterations": 2,
+      "corrections": 1
+    },
+    {
+      "design_name": "05_freq_divider",
+      "total_wall_ms": 23451.5,
+      "llm_ms": 22813.9,
+      "sim_ms": 631.5,
+      "orchestration_ms": 6.1,
+      "llm_pct": 97.3,
+      "sim_pct": 2.7,
+      "orchestration_pct": 0.0,
+      "gpu_idle_pct": 2.7,
+      "cpu_active_pct": 2.7,
+      "iterations": 1,
+      "corrections": 0
+    },
+    {
+      "design_name": "06_power_fsm",
+      "total_wall_ms": 1248541.3,
+      "llm_ms": 970784.1,
+      "sim_ms": 12105.1,
+      "orchestration_ms": 265652.2,
+      "llm_pct": 77.8,
+      "sim_pct": 1.0,
+      "orchestration_pct": 21.3,
+      "gpu_idle_pct": 22.2,
+      "cpu_active_pct": 22.2,
+      "iterations": 18,
+      "corrections": 17
+    },
+    {
+      "design_name": "07_dvfs_controller",
+      "total_wall_ms": 29811.8,
+      "llm_ms": 29166.6,
+      "sim_ms": 637.8,
+      "orchestration_ms": 7.4,
+      "llm_pct": 97.8,
+      "sim_pct": 2.1,
+      "orchestration_pct": 0.0,
+      "gpu_idle_pct": 2.2,
+      "cpu_active_pct": 2.2,
+      "iterations": 1,
+      "corrections": 0
+    },
+    {
+      "design_name": "08_shift_register",
+      "total_wall_ms": 1644944.3,
+      "llm_ms": 1112741.7,
+      "sim_ms": 9184.6,
+      "orchestration_ms": 523018.0,
+      "llm_pct": 67.6,
+      "sim_pct": 0.6,
+      "orchestration_pct": 31.8,
+      "gpu_idle_pct": 32.4,
+      "cpu_active_pct": 32.4,
+      "iterations": 14,
+      "corrections": 13
+    },
+    {
+      "design_name": "09_fifo",
+      "total_wall_ms": 37821.7,
+      "llm_ms": 37161.2,
+      "sim_ms": 650.6,
+      "orchestration_ms": 9.9,
+      "llm_pct": 98.3,
+      "sim_pct": 1.7,
+      "orchestration_pct": 0.0,
+      "gpu_idle_pct": 1.7,
+      "cpu_active_pct": 1.7,
+      "iterations": 1,
+      "corrections": 0
+    },
+    {
+      "design_name": "10_pwm",
+      "total_wall_ms": 27575.1,
+      "llm_ms": 26944.4,
+      "sim_ms": 624.5,
+      "orchestration_ms": 6.1,
+      "llm_pct": 97.7,
+      "sim_pct": 2.3,
+      "orchestration_pct": 0.0,
+      "gpu_idle_pct": 2.3,
+      "cpu_active_pct": 2.3,
+      "iterations": 1,
+      "corrections": 0
+    },
+    {
+      "design_name": "11_uart_tx",
+      "total_wall_ms": 296554.0,
+      "llm_ms": 295236.9,
+      "sim_ms": 1301.1,
+      "orchestration_ms": 16.0,
+      "llm_pct": 99.6,
+      "sim_pct": 0.4,
+      "orchestration_pct": 0.0,
+      "gpu_idle_pct": 0.4,
+      "cpu_active_pct": 0.4,
+      "iterations": 2,
+      "corrections": 1
+    },
+    {
+      "design_name": "12_watchdog",
+      "total_wall_ms": 513188.3,
+      "llm_ms": 0,
+      "sim_ms": 0,
+      "orchestration_ms": 513188.3,
+      "llm_pct": 0.0,
+      "sim_pct": 0.0,
+      "orchestration_pct": 100.0,
+      "gpu_idle_pct": 100.0,
+      "cpu_active_pct": 100.0,
+      "iterations": 6,
+      "corrections": 5
+    },
+    {
+      "design_name": "13_traffic_light",
+      "total_wall_ms": 482162.7,
+      "llm_ms": 477466.5,
+      "sim_ms": 3353.8,
+      "orchestration_ms": 1342.4,
+      "llm_pct": 99.0,
+      "sim_pct": 0.7,
+      "orchestration_pct": 0.3,
+      "gpu_idle_pct": 1.0,
+      "cpu_active_pct": 1.0,
+      "iterations": 5,
+      "corrections": 4
+    },
+    {
+      "design_name": "14_spi_master",
+      "total_wall_ms": 51750.0,
+      "llm_ms": 50660.7,
+      "sim_ms": 641.5,
+      "orchestration_ms": 447.8,
+      "llm_pct": 97.9,
+      "sim_pct": 1.2,
+      "orchestration_pct": 0.9,
+      "gpu_idle_pct": 2.1,
+      "cpu_active_pct": 2.1,
+      "iterations": 1,
+      "corrections": 0
+    },
+    {
+      "design_name": "15_priority_encoder",
+      "total_wall_ms": 268659.9,
+      "llm_ms": 266858.5,
+      "sim_ms": 1327.7,
+      "orchestration_ms": 473.8,
+      "llm_pct": 99.3,
+      "sim_pct": 0.5,
+      "orchestration_pct": 0.2,
+      "gpu_idle_pct": 0.7,
+      "cpu_active_pct": 0.7,
+      "iterations": 2,
+      "corrections": 1
+    },
+    {
+      "design_name": "16_i2c_master",
+      "total_wall_ms": 335742.0,
+      "llm_ms": 0,
+      "sim_ms": 0,
+      "orchestration_ms": 335742.0,
+      "llm_pct": 0.0,
+      "sim_pct": 0.0,
+      "orchestration_pct": 100.0,
+      "gpu_idle_pct": 100.0,
+      "cpu_active_pct": 100.0,
+      "iterations": 7,
+      "corrections": 6
+    },
+    {
+      "design_name": "17_arbiter",
+      "total_wall_ms": 492607.5,
+      "llm_ms": 0,
+      "sim_ms": 0,
+      "orchestration_ms": 492607.5,
+      "llm_pct": 0.0,
+      "sim_pct": 0.0,
+      "orchestration_pct": 100.0,
+      "gpu_idle_pct": 100.0,
+      "cpu_active_pct": 100.0,
+      "iterations": 5,
+      "corrections": 4
+    },
+    {
+      "design_name": "18_memory_controller",
+      "total_wall_ms": 399485.5,
+      "llm_ms": 0,
+      "sim_ms": 0,
+      "orchestration_ms": 399485.5,
+      "llm_pct": 0.0,
+      "sim_pct": 0.0,
+      "orchestration_pct": 100.0,
+      "gpu_idle_pct": 100.0,
+      "cpu_active_pct": 100.0,
+      "iterations": 2,
+      "corrections": 1
+    },
+    {
+      "design_name": "mux4to1",
+      "total_wall_ms": 14119.0,
+      "llm_ms": 0,
+      "sim_ms": 0,
+      "orchestration_ms": 14119.0,
+      "llm_pct": 0.0,
+      "sim_pct": 0.0,
+      "orchestration_pct": 100.0,
+      "gpu_idle_pct": 100.0,
+      "cpu_active_pct": 100.0,
+      "iterations": 1,
+      "corrections": 0
+    },
+    {
+      "design_name": "test_adder_2",
+      "total_wall_ms": 20394.3,
+      "llm_ms": 0,
+      "sim_ms": 0,
+      "orchestration_ms": 20394.3,
+      "llm_pct": 0.0,
+      "sim_pct": 0.0,
+      "orchestration_pct": 100.0,
+      "gpu_idle_pct": 100.0,
+      "cpu_active_pct": 100.0,
+      "iterations": 1,
+      "corrections": 0
+    }
+  ],
+  "token_amplification": [
+    {
+      "design_name": "01_adder",
+      "tokens_in": 474,
+      "tokens_out": 1271,
+      "total_tokens": 1745,
+      "iterations": 1,
+      "amplification_factor": 1,
+      "cost_usd": 0.0205,
+      "estimated": false
+    },
+    {
+      "design_name": "02_alu",
+      "tokens_in": 706,
+      "tokens_out": 3145,
+      "total_tokens": 3851,
+      "iterations": 1,
+      "amplification_factor": 1,
+      "cost_usd": 0.0493,
+      "estimated": false
+    },
+    {
+      "design_name": "03_icg",
+      "tokens_in": 974,
+      "tokens_out": 3269,
+      "total_tokens": 4243,
+      "iterations": 1,
+      "amplification_factor": 1,
+      "cost_usd": 0.052,
+      "estimated": false
+    },
+    {
+      "design_name": "04_counter",
+      "tokens_in": 3567,
+      "tokens_out": 3790,
+      "total_tokens": 7357,
+      "iterations": 2,
+      "amplification_factor": 2,
+      "cost_usd": 0.0676,
+      "estimated": false
+    },
+    {
+      "design_name": "05_freq_divider",
+      "tokens_in": 4000,
+      "tokens_out": 3000,
+      "total_tokens": 7000,
+      "iterations": 1,
+      "amplification_factor": 1,
+      "cost_usd": 0.057,
+      "estimated": true
+    },
+    {
+      "design_name": "06_power_fsm",
+      "tokens_in": 72000,
+      "tokens_out": 54000,
+      "total_tokens": 126000,
+      "iterations": 18,
+      "amplification_factor": 18,
+      "cost_usd": 1.026,
+      "estimated": true
+    },
+    {
+      "design_name": "07_dvfs_controller",
+      "tokens_in": 4000,
+      "tokens_out": 3000,
+      "total_tokens": 7000,
+      "iterations": 1,
+      "amplification_factor": 1,
+      "cost_usd": 0.057,
+      "estimated": true
+    },
+    {
+      "design_name": "08_shift_register",
+      "tokens_in": 56000,
+      "tokens_out": 42000,
+      "total_tokens": 98000,
+      "iterations": 14,
+      "amplification_factor": 14,
+      "cost_usd": 0.798,
+      "estimated": true
+    },
+    {
+      "design_name": "09_fifo",
+      "tokens_in": 4000,
+      "tokens_out": 3000,
+      "total_tokens": 7000,
+      "iterations": 1,
+      "amplification_factor": 1,
+      "cost_usd": 0.057,
+      "estimated": true
+    },
+    {
+      "design_name": "10_pwm",
+      "tokens_in": 4000,
+      "tokens_out": 3000,
+      "total_tokens": 7000,
+      "iterations": 1,
+      "amplification_factor": 1,
+      "cost_usd": 0.057,
+      "estimated": true
+    },
+    {
+      "design_name": "11_uart_tx",
+      "tokens_in": 8000,
+      "tokens_out": 6000,
+      "total_tokens": 14000,
+      "iterations": 2,
+      "amplification_factor": 2,
+      "cost_usd": 0.114,
+      "estimated": true
+    },
+    {
+      "design_name": "12_watchdog",
+      "tokens_in": 24000,
+      "tokens_out": 18000,
+      "total_tokens": 42000,
+      "iterations": 6,
+      "amplification_factor": 6,
+      "cost_usd": 0.342,
+      "estimated": true
+    },
+    {
+      "design_name": "13_traffic_light",
+      "tokens_in": 20000,
+      "tokens_out": 15000,
+      "total_tokens": 35000,
+      "iterations": 5,
+      "amplification_factor": 5,
+      "cost_usd": 0.285,
+      "estimated": true
+    },
+    {
+      "design_name": "14_spi_master",
+      "tokens_in": 4000,
+      "tokens_out": 3000,
+      "total_tokens": 7000,
+      "iterations": 1,
+      "amplification_factor": 1,
+      "cost_usd": 0.057,
+      "estimated": true
+    },
+    {
+      "design_name": "15_priority_encoder",
+      "tokens_in": 8000,
+      "tokens_out": 6000,
+      "total_tokens": 14000,
+      "iterations": 2,
+      "amplification_factor": 2,
+      "cost_usd": 0.114,
+      "estimated": true
+    },
+    {
+      "design_name": "16_i2c_master",
+      "tokens_in": 42969,
+      "tokens_out": 35911,
+      "total_tokens": 78880,
+      "iterations": 7,
+      "amplification_factor": 7,
+      "cost_usd": 0.6676,
+      "estimated": false
+    },
+    {
+      "design_name": "17_arbiter",
+      "tokens_in": 20000,
+      "tokens_out": 15000,
+      "total_tokens": 35000,
+      "iterations": 5,
+      "amplification_factor": 5,
+      "cost_usd": 0.285,
+      "estimated": true
+    },
+    {
+      "design_name": "18_memory_controller",
+      "tokens_in": 8000,
+      "tokens_out": 6000,
+      "total_tokens": 14000,
+      "iterations": 2,
+      "amplification_factor": 2,
+      "cost_usd": 0.114,
+      "estimated": true
+    },
+    {
+      "design_name": "mux4to1",
+      "tokens_in": 4000,
+      "tokens_out": 3000,
+      "total_tokens": 7000,
+      "iterations": 1,
+      "amplification_factor": 1,
+      "cost_usd": 0.057,
+      "estimated": true
+    },
+    {
+      "design_name": "test_adder_2",
+      "tokens_in": 579,
+      "tokens_out": 2001,
+      "total_tokens": 2580,
+      "iterations": 1,
+      "amplification_factor": 1,
+      "cost_usd": 0.0318,
+      "estimated": false
+    }
+  ],
+  "convergence": [
+    {
+      "design_name": "01_adder",
+      "total_iterations": 1,
+      "first_pass": true,
+      "curve": [
+        {
+          "iteration": 1,
+          "type": "generate",
+          "passed": true,
+          "pass_count": 6,
+          "fail_count": 0,
+          "llm_ms": 13745.5,
+          "sim_ms": 746.5,
+          "ic": 0,
+          "ir": 0
+        }
+      ]
+    },
+    {
+      "design_name": "02_alu",
+      "total_iterations": 1,
+      "first_pass": true,
+      "curve": [
+        {
+          "iteration": 1,
+          "type": "generate",
+          "passed": true,
+          "pass_count": 6,
+          "fail_count": 0,
+          "llm_ms": 30878.0,
+          "sim_ms": 656.8,
+          "ic": 0,
+          "ir": 0
+        }
+      ]
+    },
+    {
+      "design_name": "03_icg",
+      "total_iterations": 1,
+      "first_pass": true,
+      "curve": [
+        {
+          "iteration": 1,
+          "type": "generate",
+          "passed": true,
+          "pass_count": 7,
+          "fail_count": 0,
+          "llm_ms": 34581.7,
+          "sim_ms": 691.9,
+          "ic": 0,
+          "ir": 0
+        }
+      ]
+    },
+    {
+      "design_name": "04_counter",
+      "total_iterations": 2,
+      "first_pass": false,
+      "curve": [
+        {
+          "iteration": 1,
+          "type": "generate",
+          "passed": false,
+          "pass_count": 1,
+          "fail_count": 5,
+          "llm_ms": 20583.7,
+          "sim_ms": 646.8,
+          "ic": 0,
+          "ir": 0
+        },
+        {
+          "iteration": 2,
+          "type": "correct",
+          "passed": true,
+          "pass_count": 6,
+          "fail_count": 0,
+          "llm_ms": 15877.7,
+          "sim_ms": 853.3,
+          "ic": 1,
+          "ir": 0
+        }
+      ]
+    },
+    {
+      "design_name": "05_freq_divider",
+      "total_iterations": 1,
+      "first_pass": true,
+      "curve": [
+        {
+          "iteration": 1,
+          "type": "generate",
+          "passed": true,
+          "pass_count": 6,
+          "fail_count": 0,
+          "llm_ms": 22813.9,
+          "sim_ms": 631.5,
+          "ic": 0,
+          "ir": 0
+        }
+      ]
+    },
+    {
+      "design_name": "06_power_fsm",
+      "total_iterations": 18,
+      "first_pass": false,
+      "curve": [
+        {
+          "iteration": 1,
+          "type": "generate",
+          "passed": false,
+          "pass_count": 14,
+          "fail_count": 8,
+          "llm_ms": 38017.6,
+          "sim_ms": 758.6,
+          "ic": 0,
+          "ir": 0
+        },
+        {
+          "iteration": 2,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 13,
+          "fail_count": 9,
+          "llm_ms": 76169.2,
+          "sim_ms": 681.5,
+          "ic": 1,
+          "ir": 0
+        },
+        {
+          "iteration": 3,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 19,
+          "fail_count": 3,
+          "llm_ms": 65460.1,
+          "sim_ms": 651.3,
+          "ic": 2,
+          "ir": 0
+        },
+        {
+          "iteration": 4,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 0,
+          "fail_count": 0,
+          "llm_ms": 75799.0,
+          "sim_ms": 680.0,
+          "ic": 3,
+          "ir": 0
+        },
+        {
+          "iteration": 5,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 8,
+          "fail_count": 11,
+          "llm_ms": 36937.2,
+          "sim_ms": 687.0,
+          "ic": 0,
+          "ir": 1
+        },
+        {
+          "iteration": 6,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 12,
+          "fail_count": 7,
+          "llm_ms": 68448.0,
+          "sim_ms": 662.6,
+          "ic": 1,
+          "ir": 1
+        },
+        {
+          "iteration": 7,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 16,
+          "fail_count": 3,
+          "llm_ms": 43741.4,
+          "sim_ms": 632.2,
+          "ic": 2,
+          "ir": 1
+        },
+        {
+          "iteration": 8,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 18,
+          "fail_count": 1,
+          "llm_ms": 46240.6,
+          "sim_ms": 693.6,
+          "ic": 3,
+          "ir": 1
+        },
+        {
+          "iteration": 9,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 2,
+          "fail_count": 19,
+          "llm_ms": 38585.2,
+          "sim_ms": 672.1,
+          "ic": 0,
+          "ir": 2
+        },
+        {
+          "iteration": 10,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 0,
+          "fail_count": 0,
+          "llm_ms": 96553.8,
+          "sim_ms": 644.8,
+          "ic": 1,
+          "ir": 2
+        },
+        {
+          "iteration": 11,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 14,
+          "fail_count": 7,
+          "llm_ms": 47468.6,
+          "sim_ms": 654.3,
+          "ic": 2,
+          "ir": 2
+        },
+        {
+          "iteration": 12,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 16,
+          "fail_count": 5,
+          "llm_ms": 59451.2,
+          "sim_ms": 672.6,
+          "ic": 3,
+          "ir": 2
+        },
+        {
+          "iteration": 13,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 13,
+          "fail_count": 7,
+          "llm_ms": 34573.7,
+          "sim_ms": 663.4,
+          "ic": 0,
+          "ir": 3
+        },
+        {
+          "iteration": 14,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 13,
+          "fail_count": 7,
+          "llm_ms": 34573.7,
+          "sim_ms": 705.8,
+          "ic": 3,
+          "ir": 3
+        },
+        {
+          "iteration": 15,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 12,
+          "fail_count": 8,
+          "llm_ms": 34471.0,
+          "sim_ms": 644.5,
+          "ic": 0,
+          "ir": 4
+        },
+        {
+          "iteration": 16,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 15,
+          "fail_count": 5,
+          "llm_ms": 90065.2,
+          "sim_ms": 665.3,
+          "ic": 1,
+          "ir": 4
+        },
+        {
+          "iteration": 17,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 19,
+          "fail_count": 1,
+          "llm_ms": 44122.5,
+          "sim_ms": 681.9,
+          "ic": 2,
+          "ir": 4
+        },
+        {
+          "iteration": 18,
+          "type": "correct",
+          "passed": true,
+          "pass_count": 20,
+          "fail_count": 0,
+          "llm_ms": 40106.1,
+          "sim_ms": 653.7,
+          "ic": 3,
+          "ir": 4
+        }
+      ]
+    },
+    {
+      "design_name": "07_dvfs_controller",
+      "total_iterations": 1,
+      "first_pass": true,
+      "curve": [
+        {
+          "iteration": 1,
+          "type": "generate",
+          "passed": true,
+          "pass_count": 11,
+          "fail_count": 0,
+          "llm_ms": 29166.6,
+          "sim_ms": 637.8,
+          "ic": 0,
+          "ir": 0
+        }
+      ]
+    },
+    {
+      "design_name": "08_shift_register",
+      "total_iterations": 14,
+      "first_pass": false,
+      "curve": [
+        {
+          "iteration": 1,
+          "type": "generate",
+          "passed": false,
+          "pass_count": 4,
+          "fail_count": 6,
+          "llm_ms": 33373.7,
+          "sim_ms": 636.7,
+          "ic": 0,
+          "ir": 0
+        },
+        {
+          "iteration": 2,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 1,
+          "fail_count": 9,
+          "llm_ms": 101538.7,
+          "sim_ms": 652.6,
+          "ic": 1,
+          "ir": 0
+        },
+        {
+          "iteration": 3,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 9,
+          "fail_count": 1,
+          "llm_ms": 46016.3,
+          "sim_ms": 717.1,
+          "ic": 2,
+          "ir": 0
+        },
+        {
+          "iteration": 4,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 9,
+          "fail_count": 1,
+          "llm_ms": 76835.7,
+          "sim_ms": 678.4,
+          "ic": 3,
+          "ir": 0
+        },
+        {
+          "iteration": 5,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 7,
+          "fail_count": 4,
+          "llm_ms": 40145.5,
+          "sim_ms": 666.7,
+          "ic": 0,
+          "ir": 1
+        },
+        {
+          "iteration": 6,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 7,
+          "fail_count": 4,
+          "llm_ms": 40145.5,
+          "sim_ms": 654.6,
+          "ic": 3,
+          "ir": 1
+        },
+        {
+          "iteration": 7,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 5,
+          "fail_count": 6,
+          "llm_ms": 42230.5,
+          "sim_ms": 676.3,
+          "ic": 0,
+          "ir": 2
+        },
+        {
+          "iteration": 8,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 10,
+          "fail_count": 1,
+          "llm_ms": 244127.0,
+          "sim_ms": 661.2,
+          "ic": 1,
+          "ir": 2
+        },
+        {
+          "iteration": 9,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 0,
+          "fail_count": 0,
+          "llm_ms": 133079.8,
+          "sim_ms": 641.5,
+          "ic": 2,
+          "ir": 2
+        },
+        {
+          "iteration": 10,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 0,
+          "fail_count": 0,
+          "llm_ms": 45526.2,
+          "sim_ms": 634.9,
+          "ic": 3,
+          "ir": 2
+        },
+        {
+          "iteration": 11,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 4,
+          "fail_count": 6,
+          "llm_ms": 37043.0,
+          "sim_ms": 627.2,
+          "ic": 0,
+          "ir": 3
+        },
+        {
+          "iteration": 12,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 4,
+          "fail_count": 6,
+          "llm_ms": 37043.0,
+          "sim_ms": 652.7,
+          "ic": 3,
+          "ir": 3
+        },
+        {
+          "iteration": 13,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 4,
+          "fail_count": 5,
+          "llm_ms": 35946.1,
+          "sim_ms": 641.9,
+          "ic": 0,
+          "ir": 4
+        },
+        {
+          "iteration": 14,
+          "type": "correct",
+          "passed": true,
+          "pass_count": 9,
+          "fail_count": 0,
+          "llm_ms": 199690.7,
+          "sim_ms": 642.9,
+          "ic": 1,
+          "ir": 4
+        }
+      ]
+    },
+    {
+      "design_name": "09_fifo",
+      "total_iterations": 1,
+      "first_pass": true,
+      "curve": [
+        {
+          "iteration": 1,
+          "type": "generate",
+          "passed": true,
+          "pass_count": 11,
+          "fail_count": 0,
+          "llm_ms": 37161.2,
+          "sim_ms": 650.6,
+          "ic": 0,
+          "ir": 0
+        }
+      ]
+    },
+    {
+      "design_name": "10_pwm",
+      "total_iterations": 1,
+      "first_pass": true,
+      "curve": [
+        {
+          "iteration": 1,
+          "type": "generate",
+          "passed": true,
+          "pass_count": 11,
+          "fail_count": 0,
+          "llm_ms": 26944.4,
+          "sim_ms": 624.5,
+          "ic": 0,
+          "ir": 0
+        }
+      ]
+    },
+    {
+      "design_name": "11_uart_tx",
+      "total_iterations": 2,
+      "first_pass": false,
+      "curve": [
+        {
+          "iteration": 1,
+          "type": "generate",
+          "passed": false,
+          "pass_count": 8,
+          "fail_count": 2,
+          "llm_ms": 31718.3,
+          "sim_ms": 648.6,
+          "ic": 0,
+          "ir": 0
+        },
+        {
+          "iteration": 2,
+          "type": "correct",
+          "passed": true,
+          "pass_count": 10,
+          "fail_count": 0,
+          "llm_ms": 263518.6,
+          "sim_ms": 652.5,
+          "ic": 1,
+          "ir": 0
+        }
+      ]
+    },
+    {
+      "design_name": "12_watchdog",
+      "total_iterations": 0,
+      "first_pass": false,
+      "curve": []
+    },
+    {
+      "design_name": "13_traffic_light",
+      "total_iterations": 5,
+      "first_pass": false,
+      "curve": [
+        {
+          "iteration": 1,
+          "type": "generate",
+          "passed": false,
+          "pass_count": 8,
+          "fail_count": 2,
+          "llm_ms": 33232.0,
+          "sim_ms": 668.3,
+          "ic": 0,
+          "ir": 0
+        },
+        {
+          "iteration": 2,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 9,
+          "fail_count": 1,
+          "llm_ms": 248176.9,
+          "sim_ms": 661.0,
+          "ic": 1,
+          "ir": 0
+        },
+        {
+          "iteration": 3,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 0,
+          "fail_count": 0,
+          "llm_ms": 65092.1,
+          "sim_ms": 650.9,
+          "ic": 2,
+          "ir": 0
+        },
+        {
+          "iteration": 4,
+          "type": "correct",
+          "passed": false,
+          "pass_count": 9,
+          "fail_count": 1,
+          "llm_ms": 97122.6,
+          "sim_ms": 715.9,
+          "ic": 3,
+          "ir": 0
+        },
+        {
+          "iteration": 5,
+          "type": "correct",
+          "passed": true,
+          "pass_count": 9,
+          "fail_count": 0,
+          "llm_ms": 33843.0,
+          "sim_ms": 657.8,
+          "ic": 0,
+          "ir": 1
+        }
+      ]
+    },
+    {
+      "design_name": "14_spi_master",
+      "total_iterations": 1,
+      "first_pass": true,
+      "curve": [
+        {
+          "iteration": 1,
+          "type": "generate",
+          "passed": true,
+          "pass_count": 11,
+          "fail_count": 0,
+          "llm_ms": 50660.7,
+          "sim_ms": 641.5,
+          "ic": 0,
+          "ir": 0
+        }
+      ]
+    },
+    {
+      "design_name": "15_priority_encoder",
+      "total_iterations": 2,
+      "first_pass": false,
+      "curve": [
+        {
+          "iteration": 1,
+          "type": "generate",
+          "passed": false,
+          "pass_count": 13,
+          "fail_count": 1,
+          "llm_ms": 37653.3,
+          "sim_ms": 669.8,
+          "ic": 0,
+          "ir": 0
+        },
+        {
+          "iteration": 2,
+          "type": "correct",
+          "passed": true,
+          "pass_count": 14,
+          "fail_count": 0,
+          "llm_ms": 229205.2,
+          "sim_ms": 657.8,
+          "ic": 1,
+          "ir": 0
+        }
+      ]
+    },
+    {
+      "design_name": "16_i2c_master",
+      "total_iterations": 0,
+      "first_pass": false,
+      "curve": []
+    },
+    {
+      "design_name": "17_arbiter",
+      "total_iterations": 0,
+      "first_pass": false,
+      "curve": []
+    },
+    {
+      "design_name": "18_memory_controller",
+      "total_iterations": 0,
+      "first_pass": false,
+      "curve": []
+    },
+    {
+      "design_name": "mux4to1",
+      "total_iterations": 0,
+      "first_pass": false,
+      "curve": []
+    },
+    {
+      "design_name": "test_adder_2",
+      "total_iterations": 0,
+      "first_pass": false,
+      "curve": []
+    }
+  ],
+  "failure_distribution": {
+    "logic": 32,
+    "syntax": 5,
+    "signal_access": 5
+  },
+  "timelines": [
+    {
+      "design_name": "01_adder",
+      "timeline": [
+        {
+          "start": 0,
+          "duration": 13745.5,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Generate #1"
+        },
+        {
+          "start": 13745.5,
+          "duration": 746.5,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #1"
+        }
+      ],
+      "total_duration_ms": 14492.0
+    },
+    {
+      "design_name": "02_alu",
+      "timeline": [
+        {
+          "start": 0,
+          "duration": 30878.0,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Generate #1"
+        },
+        {
+          "start": 30878.0,
+          "duration": 656.8,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #1"
+        }
+      ],
+      "total_duration_ms": 31534.9
+    },
+    {
+      "design_name": "03_icg",
+      "timeline": [
+        {
+          "start": 0,
+          "duration": 34581.7,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Generate #1"
+        },
+        {
+          "start": 34581.7,
+          "duration": 691.9,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #1"
+        }
+      ],
+      "total_duration_ms": 35273.6
+    },
+    {
+      "design_name": "04_counter",
+      "timeline": [
+        {
+          "start": 0,
+          "duration": 20583.7,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Generate #1"
+        },
+        {
+          "start": 20583.7,
+          "duration": 646.8,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #1"
+        },
+        {
+          "start": 21230.5,
+          "duration": 15877.7,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #2"
+        },
+        {
+          "start": 37108.2,
+          "duration": 853.3,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #2"
+        }
+      ],
+      "total_duration_ms": 37961.5
+    },
+    {
+      "design_name": "05_freq_divider",
+      "timeline": [
+        {
+          "start": 0,
+          "duration": 22813.9,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Generate #1"
+        },
+        {
+          "start": 22813.9,
+          "duration": 631.5,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #1"
+        }
+      ],
+      "total_duration_ms": 23445.4
+    },
+    {
+      "design_name": "06_power_fsm",
+      "timeline": [
+        {
+          "start": 0,
+          "duration": 38017.6,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Generate #1"
+        },
+        {
+          "start": 38017.6,
+          "duration": 758.6,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #1"
+        },
+        {
+          "start": 38776.2,
+          "duration": 76169.2,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #2"
+        },
+        {
+          "start": 114945.5,
+          "duration": 681.5,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #2"
+        },
+        {
+          "start": 115627.0,
+          "duration": 65460.1,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #3"
+        },
+        {
+          "start": 181087.1,
+          "duration": 651.3,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #3"
+        },
+        {
+          "start": 181738.4,
+          "duration": 75799.0,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #4"
+        },
+        {
+          "start": 257537.4,
+          "duration": 680.0,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #4"
+        },
+        {
+          "start": 258217.3,
+          "duration": 36937.2,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #5"
+        },
+        {
+          "start": 295154.5,
+          "duration": 687.0,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #5"
+        },
+        {
+          "start": 295841.5,
+          "duration": 68448.0,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #6"
+        },
+        {
+          "start": 364289.5,
+          "duration": 662.6,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #6"
+        },
+        {
+          "start": 364952.1,
+          "duration": 43741.4,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #7"
+        },
+        {
+          "start": 408693.5,
+          "duration": 632.2,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #7"
+        },
+        {
+          "start": 409325.7,
+          "duration": 46240.6,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #8"
+        },
+        {
+          "start": 455566.3,
+          "duration": 693.6,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #8"
+        },
+        {
+          "start": 456259.9,
+          "duration": 38585.2,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #9"
+        },
+        {
+          "start": 494845.1,
+          "duration": 672.1,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #9"
+        },
+        {
+          "start": 495517.3,
+          "duration": 96553.8,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #10"
+        },
+        {
+          "start": 592071.0,
+          "duration": 644.8,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #10"
+        },
+        {
+          "start": 592715.8,
+          "duration": 47468.6,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #11"
+        },
+        {
+          "start": 640184.4,
+          "duration": 654.3,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #11"
+        },
+        {
+          "start": 640838.7,
+          "duration": 59451.2,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #12"
+        },
+        {
+          "start": 700289.9,
+          "duration": 672.6,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #12"
+        },
+        {
+          "start": 700962.4,
+          "duration": 34573.7,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #13"
+        },
+        {
+          "start": 735536.1,
+          "duration": 663.4,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #13"
+        },
+        {
+          "start": 736199.5,
+          "duration": 34573.7,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #14"
+        },
+        {
+          "start": 770773.2,
+          "duration": 705.8,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #14"
+        },
+        {
+          "start": 771479.0,
+          "duration": 34471.0,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #15"
+        },
+        {
+          "start": 805950.0,
+          "duration": 644.5,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #15"
+        },
+        {
+          "start": 806594.5,
+          "duration": 90065.2,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #16"
+        },
+        {
+          "start": 896659.7,
+          "duration": 665.3,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #16"
+        },
+        {
+          "start": 897325.0,
+          "duration": 44122.5,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #17"
+        },
+        {
+          "start": 941447.5,
+          "duration": 681.9,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #17"
+        },
+        {
+          "start": 942129.4,
+          "duration": 40106.1,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #18"
+        },
+        {
+          "start": 982235.4,
+          "duration": 653.7,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #18"
+        }
+      ],
+      "total_duration_ms": 982889.1
+    },
+    {
+      "design_name": "07_dvfs_controller",
+      "timeline": [
+        {
+          "start": 0,
+          "duration": 29166.6,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Generate #1"
+        },
+        {
+          "start": 29166.6,
+          "duration": 637.8,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #1"
+        }
+      ],
+      "total_duration_ms": 29804.5
+    },
+    {
+      "design_name": "08_shift_register",
+      "timeline": [
+        {
+          "start": 0,
+          "duration": 33373.7,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Generate #1"
+        },
+        {
+          "start": 33373.7,
+          "duration": 636.7,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #1"
+        },
+        {
+          "start": 34010.5,
+          "duration": 101538.7,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #2"
+        },
+        {
+          "start": 135549.2,
+          "duration": 652.6,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #2"
+        },
+        {
+          "start": 136201.8,
+          "duration": 46016.3,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #3"
+        },
+        {
+          "start": 182218.2,
+          "duration": 717.1,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #3"
+        },
+        {
+          "start": 182935.3,
+          "duration": 76835.7,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #4"
+        },
+        {
+          "start": 259770.9,
+          "duration": 678.4,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #4"
+        },
+        {
+          "start": 260449.3,
+          "duration": 40145.5,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #5"
+        },
+        {
+          "start": 300594.8,
+          "duration": 666.7,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #5"
+        },
+        {
+          "start": 301261.5,
+          "duration": 40145.5,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #6"
+        },
+        {
+          "start": 341407.0,
+          "duration": 654.6,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #6"
+        },
+        {
+          "start": 342061.6,
+          "duration": 42230.5,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #7"
+        },
+        {
+          "start": 384292.0,
+          "duration": 676.3,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #7"
+        },
+        {
+          "start": 384968.3,
+          "duration": 244127.0,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #8"
+        },
+        {
+          "start": 629095.3,
+          "duration": 661.2,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #8"
+        },
+        {
+          "start": 629756.5,
+          "duration": 133079.8,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #9"
+        },
+        {
+          "start": 762836.3,
+          "duration": 641.5,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #9"
+        },
+        {
+          "start": 763477.8,
+          "duration": 45526.2,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #10"
+        },
+        {
+          "start": 809004.1,
+          "duration": 634.9,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #10"
+        },
+        {
+          "start": 809638.9,
+          "duration": 37043.0,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #11"
+        },
+        {
+          "start": 846681.9,
+          "duration": 627.2,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #11"
+        },
+        {
+          "start": 847309.1,
+          "duration": 37043.0,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #12"
+        },
+        {
+          "start": 884352.1,
+          "duration": 652.7,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #12"
+        },
+        {
+          "start": 885004.8,
+          "duration": 35946.1,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #13"
+        },
+        {
+          "start": 920950.8,
+          "duration": 641.9,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #13"
+        },
+        {
+          "start": 921592.7,
+          "duration": 199690.7,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #14"
+        },
+        {
+          "start": 1121283.4,
+          "duration": 642.9,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #14"
+        }
+      ],
+      "total_duration_ms": 1121926.3
+    },
+    {
+      "design_name": "09_fifo",
+      "timeline": [
+        {
+          "start": 0,
+          "duration": 37161.2,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Generate #1"
+        },
+        {
+          "start": 37161.2,
+          "duration": 650.6,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #1"
+        }
+      ],
+      "total_duration_ms": 37811.8
+    },
+    {
+      "design_name": "10_pwm",
+      "timeline": [
+        {
+          "start": 0,
+          "duration": 26944.4,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Generate #1"
+        },
+        {
+          "start": 26944.4,
+          "duration": 624.5,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #1"
+        }
+      ],
+      "total_duration_ms": 27569.0
+    },
+    {
+      "design_name": "11_uart_tx",
+      "timeline": [
+        {
+          "start": 0,
+          "duration": 31718.3,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Generate #1"
+        },
+        {
+          "start": 31718.3,
+          "duration": 648.6,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #1"
+        },
+        {
+          "start": 32366.9,
+          "duration": 263518.6,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #2"
+        },
+        {
+          "start": 295885.5,
+          "duration": 652.5,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #2"
+        }
+      ],
+      "total_duration_ms": 296538.0
+    },
+    {
+      "design_name": "12_watchdog",
+      "timeline": [],
+      "total_duration_ms": 0
+    },
+    {
+      "design_name": "13_traffic_light",
+      "timeline": [
+        {
+          "start": 0,
+          "duration": 33232.0,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Generate #1"
+        },
+        {
+          "start": 33232.0,
+          "duration": 668.3,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #1"
+        },
+        {
+          "start": 33900.2,
+          "duration": 248176.9,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #2"
+        },
+        {
+          "start": 282077.2,
+          "duration": 661.0,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #2"
+        },
+        {
+          "start": 282738.1,
+          "duration": 65092.1,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #3"
+        },
+        {
+          "start": 347830.3,
+          "duration": 650.9,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #3"
+        },
+        {
+          "start": 348481.2,
+          "duration": 97122.6,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #4"
+        },
+        {
+          "start": 445603.7,
+          "duration": 715.9,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #4"
+        },
+        {
+          "start": 446319.6,
+          "duration": 33843.0,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #5"
+        },
+        {
+          "start": 480162.5,
+          "duration": 657.8,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #5"
+        }
+      ],
+      "total_duration_ms": 480820.3
+    },
+    {
+      "design_name": "14_spi_master",
+      "timeline": [
+        {
+          "start": 0,
+          "duration": 50660.7,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Generate #1"
+        },
+        {
+          "start": 50660.7,
+          "duration": 641.5,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #1"
+        }
+      ],
+      "total_duration_ms": 51302.3
+    },
+    {
+      "design_name": "15_priority_encoder",
+      "timeline": [
+        {
+          "start": 0,
+          "duration": 37653.3,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Generate #1"
+        },
+        {
+          "start": 37653.3,
+          "duration": 669.8,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #1"
+        },
+        {
+          "start": 38323.1,
+          "duration": 229205.2,
+          "type": "llm_inference",
+          "resource": "GPU (cloud)",
+          "label": "Correct #2"
+        },
+        {
+          "start": 267528.3,
+          "duration": 657.8,
+          "type": "simulation",
+          "resource": "CPU (local)",
+          "label": "iverilog sim #2"
+        }
+      ],
+      "total_duration_ms": 268186.1
+    },
+    {
+      "design_name": "16_i2c_master",
+      "timeline": [],
+      "total_duration_ms": 0
+    },
+    {
+      "design_name": "17_arbiter",
+      "timeline": [],
+      "total_duration_ms": 0
+    },
+    {
+      "design_name": "18_memory_controller",
+      "timeline": [],
+      "total_duration_ms": 0
+    },
+    {
+      "design_name": "mux4to1",
+      "timeline": [],
+      "total_duration_ms": 0
+    },
+    {
+      "design_name": "test_adder_2",
+      "timeline": [],
+      "total_duration_ms": 0
+    }
+  ],
+  "designs": [
+    {
+      "name": "01_adder",
+      "category": "combinational"
+    },
+    {
+      "name": "02_alu",
+      "category": "combinational"
+    },
+    {
+      "name": "03_icg",
+      "category": "power-aware"
+    },
+    {
+      "name": "04_counter",
+      "category": "sequential"
+    },
+    {
+      "name": "05_freq_divider",
+      "category": "power-aware"
+    },
+    {
+      "name": "06_power_fsm",
+      "category": "power-aware"
+    },
+    {
+      "name": "07_dvfs_controller",
+      "category": "power-aware"
+    },
+    {
+      "name": "08_shift_register",
+      "category": "sequential"
+    },
+    {
+      "name": "09_fifo",
+      "category": "buffer"
+    },
+    {
+      "name": "10_pwm",
+      "category": "power-aware"
+    },
+    {
+      "name": "11_uart_tx",
+      "category": "protocol"
+    },
+    {
+      "name": "12_watchdog",
+      "category": "timer"
+    },
+    {
+      "name": "13_traffic_light",
+      "category": "fsm"
+    },
+    {
+      "name": "14_spi_master",
+      "category": "protocol"
+    },
+    {
+      "name": "15_priority_encoder",
+      "category": "combinational"
+    },
+    {
+      "name": "16_i2c_master",
+      "category": "protocol"
+    },
+    {
+      "name": "17_arbiter",
+      "category": "sequential"
+    },
+    {
+      "name": "18_memory_controller",
+      "category": "buffer"
+    },
+    {
+      "name": "mux4to1",
+      "category": "combinational"
+    },
+    {
+      "name": "test_adder_2",
+      "category": "combinational"
+    }
+  ],
+  "methodology": {
+    "llm_inference": "Cloud GPU (Anthropic API \u2014 Claude Sonnet). Time measured as round-trip API call latency.",
+    "simulation": "Local CPU (Icarus Verilog + cocotb 2.0). Time measured as subprocess wall clock.",
+    "orchestration": "Local CPU (Python \u2014 file I/O, parsing, prompt assembly). Computed as wall_clock - llm - sim.",
+    "token_estimation": "claude_cli backend does not report tokens. Estimated at ~4000 input + ~3000 output per iteration based on anthropic_api calibration runs.",
+    "cost_model": "Claude Sonnet: $3.0/M input, $15.0/M output tokens.",
+    "gpu_idle": "GPU is 100% idle during simulation and orchestration phases. No local GPU used.",
+    "reference_papers": [
+      "Kim et al., 'The Cost of Dynamic Reasoning' (arXiv:2506.04301, HPCA 2026) \u2014 GPU idle 30-55% during tool execution",
+      "Zhu et al., 'NanoFlow: Towards Optimal LLM Serving Throughput' (OSDI 2025) \u2014 Intra-device parallelism for heterogeneous operations"
+    ]
+  }
+}
