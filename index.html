@@ -289,6 +289,14 @@
 
             <!-- Live Hardware Telemetry (Chopper Integration) -->
             <div class="hw-section-title" id="hw-section-title">LIVE HARDWARE TELEMETRY // CHOPPER</div>
+
+            <div class="kpi-strip" id="hw-kpi-strip">
+                <div class="kpi"><div class="kpi-label">Total Power</div><div class="kpi-value" id="hw-kpi-power" style="color:var(--accent-cyan)">--</div><div class="kpi-sub">watts (all GPUs)</div></div>
+                <div class="kpi"><div class="kpi-label">Avg Temp</div><div class="kpi-value" id="hw-kpi-temp" style="color:var(--accent-cyan)">--</div><div class="kpi-sub">thermal spread: <span id="hw-kpi-spread">--</span></div></div>
+                <div class="kpi"><div class="kpi-label">Straggler</div><div class="kpi-value" id="hw-kpi-straggler" style="color:var(--accent-red)">--</div><div class="kpi-sub">s-value: <span id="hw-kpi-sval">--</span></div></div>
+                <div class="kpi"><div class="kpi-label">Lead GPU</div><div class="kpi-value" id="hw-kpi-lead" style="color:var(--accent-green)">--</div><div class="kpi-sub">fastest compute</div></div>
+            </div>
+
             <div class="panel-grid three" id="hw-panels">
                 <div class="panel">
                     <div class="panel-title">GPU Frequency <span class="tag" id="hw-freq-tag">awaiting connection</span></div>
@@ -301,6 +309,17 @@
                 <div class="panel">
                     <div class="panel-title">GPU Temperature <span class="tag" id="hw-temp-tag">awaiting connection</span></div>
                     <div class="hw-chart-container" id="chart-hw-temp"></div>
+                </div>
+            </div>
+
+            <div class="panel-grid">
+                <div class="panel">
+                    <div class="panel-title">Straggler Detection <span class="tag">s-value per GPU (Lit Silicon)</span></div>
+                    <div class="hw-chart-container" id="chart-hw-straggler"></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-title">Agent Event Timeline <span class="tag" id="hw-agent-tag">LLM vs tool execution</span></div>
+                    <div class="hw-chart-container" id="chart-hw-agent"></div>
                 </div>
             </div>
         `;
@@ -693,11 +712,14 @@
     // LIVE HARDWARE TELEMETRY (Chopper Integration)
     // ═══════════════════════════════════════════════
     const HW_URL = 'http://localhost:8765/stream/hardware';
+    const AGENT_URL = 'http://localhost:8765/stream/agent';
     const MAX_HW_POINTS = 300; // 5 min at 1Hz
     let hwSource = null;
+    let agentSource = null;
     let hwConnected = false;
-    let hwCharts = { freq: null, power: null, temp: null };
-    let hwData = { timestamps: [], freq: {}, power: {}, temp: {} };
+    let hwCharts = { freq: null, power: null, temp: null, straggler: null, agent: null };
+    let hwData = { timestamps: [], freq: {}, power: {}, temp: {}, svalues: {} };
+    let agentEvents = []; // {elapsed, type, name}
     const GPU_COLORS = ['#ff6b2b','#22d3ee','#34d399','#f5a623','#a78bfa','#f87171','#60a5fa','#fbbf24'];
 
     function toggleTelemetry() {
@@ -707,7 +729,9 @@
 
     function connectTelemetry() {
         if (hwSource) hwSource.close();
-        hwData = { timestamps: [], freq: {}, power: {}, temp: {} };
+        if (agentSource) agentSource.close();
+        hwData = { timestamps: [], freq: {}, power: {}, temp: {}, svalues: {} };
+        agentEvents = [];
 
         try {
             hwSource = new EventSource(HW_URL);
@@ -725,16 +749,25 @@
 
                 d.gpus.forEach(g => {
                     const id = g.gpu;
-                    if (!hwData.freq[id]) { hwData.freq[id] = []; hwData.power[id] = []; hwData.temp[id] = []; }
+                    if (!hwData.freq[id]) { hwData.freq[id] = []; hwData.power[id] = []; hwData.temp[id] = []; hwData.svalues[id] = []; }
                     hwData.freq[id].push(g.gfxclk);
                     hwData.power[id].push(g.power);
                     hwData.temp[id].push(g.temp);
                     if (hwData.freq[id].length > MAX_HW_POINTS) {
-                        hwData.freq[id].shift(); hwData.power[id].shift(); hwData.temp[id].shift();
+                        hwData.freq[id].shift(); hwData.power[id].shift(); hwData.temp[id].shift(); hwData.svalues[id].shift();
                     }
                 });
 
+                // Store straggler s-values
+                if (d.straggler && d.straggler.s_values) {
+                    Object.entries(d.straggler.s_values).forEach(([id, sv]) => {
+                        if (!hwData.svalues[id]) hwData.svalues[id] = [];
+                        hwData.svalues[id].push(sv);
+                    });
+                }
+
                 updateHardwareCharts(d);
+                updateStragglerKPIs(d);
             };
             hwSource.onerror = () => {
                 hwConnected = false;
@@ -743,6 +776,15 @@
                 hwSource.close();
                 hwSource = null;
             };
+
+            // Agent event stream
+            agentSource = new EventSource(AGENT_URL);
+            agentSource.onmessage = (event) => {
+                const evt = JSON.parse(event.data);
+                agentEvents.push(evt);
+                if (agentEvents.length > 500) agentEvents.shift();
+                updateAgentChart();
+            };
         } catch (e) {
             console.error('Telemetry connection failed:', e);
         }
@@ -750,6 +792,7 @@
 
     function disconnectTelemetry() {
         if (hwSource) { hwSource.close(); hwSource = null; }
+        if (agentSource) { agentSource.close(); agentSource = null; }
         hwConnected = false;
         document.getElementById('hw-status').classList.remove('connected');
         document.getElementById('hw-label').textContent = 'HW OFFLINE';
@@ -759,11 +802,15 @@
         const freqEl = document.getElementById('chart-hw-freq');
         const powerEl = document.getElementById('chart-hw-power');
         const tempEl = document.getElementById('chart-hw-temp');
+        const stragglerEl = document.getElementById('chart-hw-straggler');
+        const agentEl = document.getElementById('chart-hw-agent');
         if (!freqEl) return;
 
         hwCharts.freq = echarts.init(freqEl);
         hwCharts.power = echarts.init(powerEl);
         hwCharts.temp = echarts.init(tempEl);
+        if (stragglerEl) hwCharts.straggler = echarts.init(stragglerEl);
+        if (agentEl) hwCharts.agent = echarts.init(agentEl);
 
         const baseOpt = (yName, yMin, yMax) => ({
             grid: { left: 55, right: 15, top: 10, bottom: 25 },
@@ -775,6 +822,15 @@
         hwCharts.freq.setOption(baseOpt('MHz', 1000, 2200));
         hwCharts.power.setOption(baseOpt('W', 0, null));
         hwCharts.temp.setOption(baseOpt('\u00b0C', 30, 100));
+        if (hwCharts.straggler) hwCharts.straggler.setOption(baseOpt('s-value', 0, null));
+        if (hwCharts.agent) {
+            hwCharts.agent.setOption({
+                grid: { left: 55, right: 15, top: 10, bottom: 25 },
+                xAxis: { type: 'value', name: 'elapsed (s)', nameTextStyle: { color: '#3e4a63', fontSize: 9 }, axisLabel: { color: '#8892a8', fontSize: 9 }, splitLine: { lineStyle: { color: '#1a2540' } } },
+                yAxis: { type: 'category', data: ['Agent'], axisLabel: { show: false }, axisTick: { show: false } },
+                series: [],
+            });
+        }
 
         window.addEventListener('resize', () => {
             Object.values(hwCharts).forEach(c => { if (c) c.resize(); });
@@ -807,6 +863,87 @@
         hwCharts.freq.setOption({ xAxis: { data: hwData.timestamps }, series: makeSeries('freq') });
         hwCharts.power.setOption({ xAxis: { data: hwData.timestamps }, series: makeSeries('power') });
         hwCharts.temp.setOption({ xAxis: { data: hwData.timestamps }, series: makeSeries('temp') });
+
+        // Update straggler chart
+        if (hwCharts.straggler) {
+            const svSeries = gpuIds.map((id, i) => ({
+                name: 'GPU ' + id,
+                type: 'line', smooth: true, showSymbol: false,
+                data: hwData.svalues[id] || [],
+                lineStyle: { width: 1.5, color: GPU_COLORS[i % GPU_COLORS.length] },
+                itemStyle: { color: GPU_COLORS[i % GPU_COLORS.length] },
+                areaStyle: { opacity: 0.05 },
+            }));
+            hwCharts.straggler.setOption({ xAxis: { data: hwData.timestamps }, series: svSeries });
+        }
+    }
+
+    function updateStragglerKPIs(d) {
+        const powerEl = document.getElementById('hw-kpi-power');
+        const tempEl = document.getElementById('hw-kpi-temp');
+        const spreadEl = document.getElementById('hw-kpi-spread');
+        const stragglerEl = document.getElementById('hw-kpi-straggler');
+        const svalEl = document.getElementById('hw-kpi-sval');
+        const leadEl = document.getElementById('hw-kpi-lead');
+        if (!powerEl) return;
+
+        if (d.aggregate) {
+            powerEl.textContent = d.aggregate.total_power + 'W';
+            tempEl.textContent = d.aggregate.avg_temp + '\u00b0C';
+            spreadEl.textContent = d.aggregate.temp_spread + '\u00b0C';
+        }
+        if (d.straggler) {
+            stragglerEl.textContent = d.straggler.straggler_gpu !== null ? 'GPU ' + d.straggler.straggler_gpu : '--';
+            svalEl.textContent = d.straggler.max_s_value.toFixed(3);
+            leadEl.textContent = d.straggler.lead_gpu !== null ? 'GPU ' + d.straggler.lead_gpu : '--';
+        }
+    }
+
+    function updateAgentChart() {
+        if (!hwCharts.agent || agentEvents.length === 0) return;
+
+        // Build Gantt-style segments from paired start/end events
+        const segments = [];
+        const starts = {};
+        agentEvents.forEach(evt => {
+            if (evt.type === 'llm_start' || evt.type === 'tool_start') {
+                starts[evt.type.replace('_start', '')] = evt;
+            } else if (evt.type === 'llm_end' || evt.type === 'tool_end') {
+                const key = evt.type.replace('_end', '');
+                if (starts[key]) {
+                    segments.push({
+                        start: starts[key].elapsed,
+                        end: evt.elapsed,
+                        type: key,
+                        name: starts[key].name || key,
+                    });
+                    delete starts[key];
+                }
+            }
+        });
+
+        const data = segments.map(seg => ({
+            value: [0, seg.start, seg.end, seg.end - seg.start],
+            name: seg.name,
+            itemStyle: { color: seg.type === 'llm' ? '#ff6b2b' : '#22d3ee' },
+        }));
+
+        function renderItem(params, api) {
+            const start = api.coord([api.value(1), 0]);
+            const end = api.coord([api.value(2), 0]);
+            const height = api.size([0, 1])[1] * 0.6;
+            return { type: 'rect', shape: { x: start[0], y: start[1] - height/2, width: Math.max(end[0] - start[0], 4), height: height }, style: api.style() };
+        }
+
+        const maxT = segments.length > 0 ? Math.max(...segments.map(s => s.end)) : 100;
+        hwCharts.agent.setOption({
+            tooltip: { formatter: p => p.data.name + '<br/>' + p.data.value[3].toFixed(1) + 's' },
+            xAxis: { max: maxT },
+            series: [{ type: 'custom', renderItem: renderItem, encode: { x: [1,2], y: 0 }, data: data }],
+        });
+
+        const tag = document.getElementById('hw-agent-tag');
+        if (tag) tag.textContent = segments.length + ' events';
     }
 
     init();
