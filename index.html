@@ -66,7 +66,7 @@
         .sidebar-summary { padding: 14px 16px; border-top: 1px solid var(--border); font-size: 0.7rem; color: var(--text-dim); }
 
         /* Content Area */
-        .content { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+        .content { flex: 1; overflow-y: auto; padding: 16px 16px 40px; display: flex; flex-direction: column; gap: 14px; }
 
         /* KPI Strip */
         .kpi-strip { display: flex; gap: 12px; flex-shrink: 0; }
@@ -125,6 +125,21 @@
         ::-webkit-scrollbar-track { background: var(--bg-deep); }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #2a3a5a; }
+
+        /* Hardware Telemetry */
+        .hw-status { display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 2px 8px; border: 1px solid var(--border); border-radius: 3px; transition: all 0.2s; }
+        .hw-status:hover { border-color: var(--accent-amber); }
+        .hw-status.connected { border-color: var(--accent-green); }
+        .hw-status.connected .hw-dot { background: var(--accent-green); box-shadow: 0 0 8px var(--accent-green); }
+        .hw-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); transition: all 0.3s; }
+        .hw-label { font-size: 0.6rem; letter-spacing: 1px; text-transform: uppercase; }
+        .hw-section-title {
+            font-family: 'Orbitron', sans-serif; font-size: 0.65rem; font-weight: 500;
+            color: var(--accent-cyan); letter-spacing: 2px; text-transform: uppercase;
+            padding: 4px 0; display: flex; align-items: center; gap: 10px;
+        }
+        .hw-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .hw-chart-container { flex: 1; min-height: 180px; }
     </style>
 </head>
 <body>
@@ -136,6 +151,10 @@
         </div>
         <div class="topbar-right">
             <span id="topbar-info">Loading...</span>
+            <div class="hw-status" id="hw-status" onclick="toggleTelemetry()" title="Click to connect/disconnect hardware telemetry">
+                <div class="hw-dot" id="hw-dot"></div>
+                <span class="hw-label" id="hw-label">HW OFFLINE</span>
+            </div>
             <div class="status-live"><div class="dot"></div> PROFILER ACTIVE</div>
         </div>
     </div>
@@ -267,6 +286,23 @@
                     </table>
                 </div>
             </div>
+
+            <!-- Live Hardware Telemetry (Chopper Integration) -->
+            <div class="hw-section-title" id="hw-section-title">LIVE HARDWARE TELEMETRY // CHOPPER</div>
+            <div class="panel-grid three" id="hw-panels">
+                <div class="panel">
+                    <div class="panel-title">GPU Frequency <span class="tag" id="hw-freq-tag">awaiting connection</span></div>
+                    <div class="hw-chart-container" id="chart-hw-freq"></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-title">GPU Power <span class="tag" id="hw-power-tag">awaiting connection</span></div>
+                    <div class="hw-chart-container" id="chart-hw-power"></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-title">GPU Temperature <span class="tag" id="hw-temp-tag">awaiting connection</span></div>
+                    <div class="hw-chart-container" id="chart-hw-temp"></div>
+                </div>
+            </div>
         `;
 
         setTimeout(() => {
@@ -275,6 +311,7 @@
             renderIdleChart();
             renderTokenChart();
             renderFailureChart();
+            initHardwareCharts();
         }, 50);
     }
 
@@ -367,14 +404,14 @@
 
         chart.setOption({
             tooltip: { formatter: p => `${p.data.name}<br/>${(p.data.value[3]/1000).toFixed(1)}s` },
-            grid: { left: 120, right: 30, top: 10, bottom: 30 },
+            grid: { left: 120, right: 30, top: 10, bottom: 44 },
             xAxis: { type: 'value', max: maxDur, axisLabel: { formatter: v => (v/1000).toFixed(0)+'s', color: '#8892a8', fontSize: 10 }, splitLine: { lineStyle: { color: '#1a2540' } } },
             yAxis: { type: 'category', data: categories, inverse: true, axisLabel: { color: '#8892a8', fontSize: 11 }, axisTick: { show: false }, splitLine: { show: false } },
             series: [
                 { type: 'custom', renderItem: renderItem, encode: { x: [1,2], y: 0 }, data: gpuData, name: 'GPU' },
                 { type: 'custom', renderItem: renderItem, encode: { x: [1,2], y: 0 }, data: cpuData, name: 'CPU' },
             ],
-            dataZoom: [{ type: 'slider', xAxisIndex: 0, bottom: 2, height: 16, borderColor: '#1a2540', backgroundColor: '#0b1120', fillerColor: 'rgba(255,107,43,0.1)', handleStyle: { color: '#ff6b2b' } }],
+            dataZoom: [{ type: 'slider', xAxisIndex: 0, bottom: 4, height: 20, borderColor: '#1a2540', backgroundColor: '#0b1120', fillerColor: 'rgba(255,107,43,0.1)', handleStyle: { color: '#ff6b2b' }, textStyle: { color: '#8892a8', fontSize: 10 } }],
         });
         chart.on('click', p => {
             if (p.data && p.data.value) {
@@ -387,57 +424,132 @@
         window.addEventListener('resize', () => chart.resize());
     }
 
-    // ─── CHART: TIME DECOMPOSITION ────────────────
+    // ─── CHART: TIME DECOMPOSITION (Dual-panel: % mix + absolute total) ────
     function renderTimeChart() {
         const el = document.getElementById('chart-time');
         if (!el) return;
         const chart = echarts.init(el);
         charts['time'] = chart;
 
-        const d = DATA.time_decomposition.filter(d => !d.design_name.includes('mux') && !d.design_name.includes('test_')).sort((a,b) => b.total_wall_ms - a.total_wall_ms);
-        const labels = d.map(x => x.design_name.replace(/^\d+_/, ''));
+        const raw = DATA.time_decomposition.filter(d => !d.design_name.includes('mux') && !d.design_name.includes('test_')).sort((a,b) => b.total_wall_ms - a.total_wall_ms);
+        const labels = raw.map(x => x.design_name.replace(/^\d+_/, ''));
+
+        const pctData = raw.map(d => {
+            const total = (d.llm_ms || 0) + (d.sim_ms || 0) + (d.orchestration_ms || 0);
+            return {
+                llm: total > 0 ? ((d.llm_ms || 0) / total * 100) : 0,
+                sim: total > 0 ? ((d.sim_ms || 0) / total * 100) : 0,
+                orch: total > 0 ? ((d.orchestration_ms || 0) / total * 100) : 0,
+                llm_ms: d.llm_ms || 0, sim_ms: d.sim_ms || 0, orch_ms: d.orchestration_ms || 0,
+                total_ms: d.total_wall_ms
+            };
+        });
 
         chart.setOption({
-            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-            legend: { data: ['LLM (GPU)', 'Simulation (CPU)', 'Orchestration'], textStyle: { color: '#8892a8', fontSize: 10 }, bottom: 0 },
-            grid: { left: 90, right: 15, top: 10, bottom: 40 },
-            xAxis: { type: 'value', axisLabel: { formatter: v => (v/1000).toFixed(0)+'s', color: '#8892a8', fontSize: 10 }, splitLine: { lineStyle: { color: '#1a2540' } } },
-            yAxis: { type: 'category', data: labels, inverse: true, axisLabel: { color: '#8892a8', fontSize: 10 }, axisTick: { show: false } },
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: function(params) {
+                const name = params[0].axisValueLabel;
+                const idx = labels.indexOf(name);
+                if (idx < 0) return '';
+                const d = pctData[idx];
+                let s = '<b>' + name + '</b><br/>';
+                s += '<span style="color:#ff6b2b">\u25cf</span> LLM (GPU): ' + (d.llm_ms/1000).toFixed(1) + 's (' + d.llm.toFixed(1) + '%)<br/>';
+                s += '<span style="color:#22d3ee">\u25cf</span> Sim (CPU): ' + (d.sim_ms/1000).toFixed(1) + 's (' + d.sim.toFixed(1) + '%)<br/>';
+                s += '<span style="color:#3e4a63">\u25cf</span> Orch: ' + (d.orch_ms/1000).toFixed(1) + 's (' + d.orch.toFixed(1) + '%)<br/>';
+                s += '<b>Total: ' + (d.total_ms/1000).toFixed(1) + 's</b>';
+                return s;
+            }},
+            legend: { data: ['LLM (GPU)', 'Simulation (CPU)', 'Orchestration'], textStyle: { color: '#8892a8', fontSize: 10 }, bottom: 0, itemGap: 14 },
+            grid: [
+                { left: 90, right: '38%', top: 10, bottom: 52 },
+                { left: '66%', right: 15, top: 10, bottom: 52 }
+            ],
+            xAxis: [
+                { gridIndex: 0, type: 'value', max: 100, axisLabel: { formatter: '{value}%', color: '#8892a8', fontSize: 9 }, splitLine: { lineStyle: { color: '#1a2540' } }, name: 'Time Mix', nameTextStyle: { color: '#3e4a63', fontSize: 9 }, nameLocation: 'center', nameGap: 18 },
+                { gridIndex: 1, type: 'log', min: 10000, axisLabel: { formatter: function(v) { return (v/1000).toFixed(0)+'s'; }, color: '#8892a8', fontSize: 9 }, splitLine: { lineStyle: { color: '#1a2540' } }, name: 'Wall Time', nameTextStyle: { color: '#3e4a63', fontSize: 9 }, nameLocation: 'center', nameGap: 18 }
+            ],
+            yAxis: [
+                { gridIndex: 0, type: 'category', data: labels, inverse: true, axisLabel: { color: '#8892a8', fontSize: 10 }, axisTick: { show: false } },
+                { gridIndex: 1, type: 'category', data: labels, inverse: true, axisLabel: { show: false }, axisTick: { show: false } }
+            ],
             series: [
-                { name: 'LLM (GPU)', type: 'bar', stack: 'total', data: d.map(x => x.llm_ms), itemStyle: { color: '#ff6b2b' }, barWidth: 14 },
-                { name: 'Simulation (CPU)', type: 'bar', stack: 'total', data: d.map(x => x.sim_ms), itemStyle: { color: '#22d3ee' }, barWidth: 14 },
-                { name: 'Orchestration', type: 'bar', stack: 'total', data: d.map(x => x.orchestration_ms), itemStyle: { color: '#3e4a63' }, barWidth: 14 },
+                { name: 'LLM (GPU)', type: 'bar', stack: 'pct', xAxisIndex: 0, yAxisIndex: 0, data: pctData.map(d => d.llm), itemStyle: { color: '#ff6b2b' }, barWidth: 14 },
+                { name: 'Simulation (CPU)', type: 'bar', stack: 'pct', xAxisIndex: 0, yAxisIndex: 0, data: pctData.map(d => d.sim), itemStyle: { color: '#22d3ee' }, barWidth: 14 },
+                { name: 'Orchestration', type: 'bar', stack: 'pct', xAxisIndex: 0, yAxisIndex: 0, data: pctData.map(d => d.orch), itemStyle: { color: '#3e4a63' }, barWidth: 14 },
+                { type: 'bar', xAxisIndex: 1, yAxisIndex: 1,
+                  data: raw.map(function(d) { return d.total_wall_ms; }),
+                  itemStyle: { color: '#f5a623' }, barWidth: 14 }
             ]
         });
         window.addEventListener('resize', () => chart.resize());
     }
 
-    // ─── CHART: GPU IDLE ──────────────────────────
+    // ─── CHART: GPU IDLE (lollipop — selective labels to avoid collision) ─────
     function renderIdleChart() {
         const el = document.getElementById('chart-idle');
         if (!el) return;
         const chart = echarts.init(el);
         charts['idle'] = chart;
 
-        const d = DATA.time_decomposition.filter(d => !d.design_name.includes('mux') && !d.design_name.includes('test_')).sort((a,b) => b.gpu_idle_pct - a.gpu_idle_pct);
+        const all = DATA.time_decomposition.filter(d => !d.design_name.includes('mux') && !d.design_name.includes('test_'));
+        const hasData = all.filter(d => d.llm_ms > 0).sort((a,b) => a.gpu_idle_pct - b.gpu_idle_pct);
+        const noData = all.filter(d => d.llm_ms === 0);
+        const labels = hasData.map(x => x.design_name.replace(/^\d+_/, ''));
+        const avgIdle = hasData.reduce((s, d) => s + d.gpu_idle_pct, 0) / hasData.length;
+
+        // Only show labels where there's enough gap from the previous labeled value (>= 1.5pp)
+        var lastLabeled = -999;
+        var labelFlags = hasData.map(function(x) {
+            // Always label the top 2 (outliers) and bottom 1
+            var idx = hasData.indexOf(x);
+            if (idx === 0 || idx >= hasData.length - 2) { lastLabeled = x.gpu_idle_pct; return true; }
+            if (x.gpu_idle_pct - lastLabeled >= 1.5) { lastLabeled = x.gpu_idle_pct; return true; }
+            return false;
+        });
 
         chart.setOption({
-            tooltip: { trigger: 'axis' },
-            grid: { left: 90, right: 15, top: 10, bottom: 10 },
-            xAxis: { type: 'value', max: 100, axisLabel: { formatter: '{value}%', color: '#8892a8', fontSize: 10 }, splitLine: { lineStyle: { color: '#1a2540' } } },
-            yAxis: { type: 'category', data: d.map(x => x.design_name.replace(/^\d+_/, '')), inverse: true, axisLabel: { color: '#8892a8', fontSize: 10 } },
-            series: [{
-                type: 'bar', data: d.map(x => ({
-                    value: x.gpu_idle_pct,
-                    itemStyle: { color: x.gpu_idle_pct > 50 ? '#f87171' : x.gpu_idle_pct > 30 ? '#f5a623' : '#34d399' }
-                })),
-                barWidth: 14,
-                markLine: { silent: true, data: [
-                    { xAxis: 30, lineStyle: { color: '#f5a623', type: 'dashed', width: 1 }, label: { show: true, formatter: '30%', color: '#f5a623', fontSize: 9 } },
-                    { xAxis: 55, lineStyle: { color: '#f87171', type: 'dashed', width: 1 }, label: { show: true, formatter: '55%', color: '#f87171', fontSize: 9 } },
-                ] }
-            }],
-            graphic: [{ type: 'text', left: 'center', bottom: 5, style: { text: 'Kim et al. range: 30-55%', fill: '#3e4a63', fontSize: 10 } }]
+            tooltip: { trigger: 'axis', axisPointer: { type: 'line', lineStyle: { color: '#2a3a5a' } }, formatter: function(params) {
+                // Find the scatter series param (skip bar stem)
+                var p = params.find(function(x) { return x.seriesType === 'scatter'; }) || params[0];
+                var d = hasData[labels.indexOf(p.axisValueLabel)];
+                return '<b>' + p.axisValueLabel + '</b><br/>GPU Idle: <span style="color:#ff6b2b;font-weight:bold">' + (d ? d.gpu_idle_pct : p.value) + '%</span><br/>Iterations: ' + (d ? d.iterations : '?') + '<br/>Wall time: ' + (d ? (d.total_wall_ms/1000).toFixed(1)+'s' : '?');
+            }},
+            grid: { left: 90, right: 55, top: 10, bottom: noData.length > 0 ? 34 : 10 },
+            xAxis: { type: 'value', max: 60, interval: 10, axisLabel: { formatter: '{value}%', color: '#8892a8', fontSize: 10, margin: 6 }, splitLine: { lineStyle: { color: '#1a2540' } }, axisLine: { lineStyle: { color: '#1a2540' } } },
+            yAxis: { type: 'category', data: labels, axisLabel: { color: '#8892a8', fontSize: 10 }, axisTick: { show: false }, axisLine: { lineStyle: { color: '#1a2540' } } },
+            series: [
+                // Thin stem (use custom renderItem to draw a plain line, not a bar with rounded caps)
+                { type: 'custom', renderItem: function(params, api) {
+                    var yVal = api.value(0);
+                    var start = api.coord([0, yVal]);
+                    var end = api.coord([api.value(1), yVal]);
+                    return { type: 'line', shape: { x1: start[0], y1: start[1], x2: end[0], y2: end[1] }, style: { stroke: 'rgba(142,150,170,0.2)', lineWidth: 1.5 } };
+                  },
+                  encode: { x: 1, y: 0 },
+                  data: hasData.map(function(x, i) { return [i, x.gpu_idle_pct]; }),
+                  silent: true, z: 1
+                },
+                // Dot at value
+                { type: 'scatter', data: hasData.map(function(x, i) {
+                    return {
+                        value: x.gpu_idle_pct,
+                        itemStyle: { color: x.gpu_idle_pct > 30 ? '#f5a623' : '#34d399' },
+                        label: { show: labelFlags[i], position: 'right', formatter: x.gpu_idle_pct.toFixed(1) + '%', color: '#8892a8', fontSize: 9, distance: 5 }
+                    };
+                  }),
+                  symbolSize: 9, symbol: 'circle', z: 2,
+                  markLine: { silent: true, symbol: 'none', data: [
+                    { xAxis: 30, lineStyle: { color: '#f5a623', type: 'dashed', width: 1.5 }, label: { show: true, position: 'end', formatter: '30%', color: '#f5a623', fontSize: 10, fontWeight: 'bold' } },
+                    { xAxis: 55, lineStyle: { color: '#f87171', type: 'dashed', width: 1.5 }, label: { show: true, position: 'end', formatter: '55%', color: '#f87171', fontSize: 10, fontWeight: 'bold' } },
+                    { xAxis: avgIdle, lineStyle: { color: '#22d3ee', type: 'dotted', width: 1 }, label: { show: true, position: 'end', formatter: 'avg ' + avgIdle.toFixed(1) + '%', color: '#22d3ee', fontSize: 9 } }
+                  ] },
+                  markArea: { silent: true, data: [[
+                    { xAxis: 30, itemStyle: { color: 'rgba(245,166,35,0.06)' },
+                      label: { show: true, position: 'insideTop', formatter: 'Kim et al. 30-55%', color: 'rgba(245,166,35,0.4)', fontSize: 9, fontStyle: 'italic' } },
+                    { xAxis: 55 }
+                  ]] }
+                }
+            ],
+            graphic: noData.length > 0 ? [{ type: 'text', left: 90, bottom: 0, style: { text: noData.length + ' designs omitted (no latency data)', fill: '#3e4a63', fontSize: 8 } }] : []
         });
         window.addEventListener('resize', () => chart.resize());
     }
@@ -450,16 +562,28 @@
         charts['tokens'] = chart;
 
         const d = DATA.token_amplification.filter(d => !d.design_name.includes('mux') && !d.design_name.includes('test_')).sort((a,b) => b.total_tokens - a.total_tokens);
+        const labels = d.map(x => x.design_name.replace(/^\d+_/, ''));
 
         chart.setOption({
-            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: function(params) {
+                let s = '<b>' + params[0].axisValueLabel + '</b><br/>';
+                const inp = params.find(p => p.seriesName === 'Input');
+                const out = params.find(p => p.seriesName === 'Output');
+                const inVal = inp ? inp.value : 0;
+                const outVal = out ? out.value : 0;
+                s += '<span style="color:#22d3ee">\u25cf</span> Input: ' + (inVal/1000).toFixed(1) + 'K<br/>';
+                s += '<span style="color:#ff6b2b">\u25cf</span> Output: ' + (outVal/1000).toFixed(1) + 'K<br/>';
+                s += '<b>Total: ' + ((inVal+outVal)/1000).toFixed(1) + 'K</b>';
+                if (inVal > 0) s += '<br/>Out/In ratio: ' + (outVal/inVal).toFixed(2) + 'x';
+                return s;
+            }},
             legend: { data: ['Input', 'Output'], textStyle: { color: '#8892a8', fontSize: 10 }, bottom: 0 },
-            grid: { left: 90, right: 15, top: 10, bottom: 35 },
-            xAxis: { type: 'value', axisLabel: { formatter: v => (v/1000).toFixed(0)+'K', color: '#8892a8', fontSize: 10 }, splitLine: { lineStyle: { color: '#1a2540' } } },
-            yAxis: { type: 'category', data: d.map(x => x.design_name.replace(/^\d+_/, '')), inverse: true, axisLabel: { color: '#8892a8', fontSize: 10 } },
+            grid: { left: 90, right: 40, top: 10, bottom: 35 },
+            xAxis: { type: 'log', min: 100, axisLabel: { formatter: function(v) { return v >= 1000 ? (v/1000).toFixed(0)+'K' : v; }, color: '#8892a8', fontSize: 10 }, splitLine: { lineStyle: { color: '#1a2540' } } },
+            yAxis: { type: 'category', data: labels, inverse: true, axisLabel: { color: '#8892a8', fontSize: 10 } },
             series: [
-                { name: 'Input', type: 'bar', stack: 'total', data: d.map(x => x.tokens_in), itemStyle: { color: '#f5a623' }, barWidth: 14 },
-                { name: 'Output', type: 'bar', stack: 'total', data: d.map(x => x.tokens_out), itemStyle: { color: '#ff6b2b' }, barWidth: 14 },
+                { name: 'Input', type: 'bar', data: d.map(x => x.tokens_in || null), itemStyle: { color: '#22d3ee' }, barWidth: 7, barGap: '20%' },
+                { name: 'Output', type: 'bar', data: d.map(x => x.tokens_out || null), itemStyle: { color: '#ff6b2b' }, barWidth: 7 },
             ]
         });
         window.addEventListener('resize', () => chart.resize());
@@ -563,6 +687,126 @@
             ]
         });
         window.addEventListener('resize', () => chart.resize());
+    }
+
+    // ═══════════════════════════════════════════════
+    // LIVE HARDWARE TELEMETRY (Chopper Integration)
+    // ═══════════════════════════════════════════════
+    const HW_URL = 'http://localhost:8765/stream/hardware';
+    const MAX_HW_POINTS = 300; // 5 min at 1Hz
+    let hwSource = null;
+    let hwConnected = false;
+    let hwCharts = { freq: null, power: null, temp: null };
+    let hwData = { timestamps: [], freq: {}, power: {}, temp: {} };
+    const GPU_COLORS = ['#ff6b2b','#22d3ee','#34d399','#f5a623','#a78bfa','#f87171','#60a5fa','#fbbf24'];
+
+    function toggleTelemetry() {
+        if (hwConnected) disconnectTelemetry();
+        else connectTelemetry();
+    }
+
+    function connectTelemetry() {
+        if (hwSource) hwSource.close();
+        hwData = { timestamps: [], freq: {}, power: {}, temp: {} };
+
+        try {
+            hwSource = new EventSource(HW_URL);
+            hwSource.onopen = () => {
+                hwConnected = true;
+                document.getElementById('hw-status').classList.add('connected');
+                document.getElementById('hw-label').textContent = 'HW LIVE';
+            };
+            hwSource.onmessage = (event) => {
+                const d = JSON.parse(event.data);
+                const t = d.elapsed ? d.elapsed.toFixed(0) + 's' : new Date(d.ts * 1000).toLocaleTimeString();
+
+                hwData.timestamps.push(t);
+                if (hwData.timestamps.length > MAX_HW_POINTS) hwData.timestamps.shift();
+
+                d.gpus.forEach(g => {
+                    const id = g.gpu;
+                    if (!hwData.freq[id]) { hwData.freq[id] = []; hwData.power[id] = []; hwData.temp[id] = []; }
+                    hwData.freq[id].push(g.gfxclk);
+                    hwData.power[id].push(g.power);
+                    hwData.temp[id].push(g.temp);
+                    if (hwData.freq[id].length > MAX_HW_POINTS) {
+                        hwData.freq[id].shift(); hwData.power[id].shift(); hwData.temp[id].shift();
+                    }
+                });
+
+                updateHardwareCharts(d);
+            };
+            hwSource.onerror = () => {
+                hwConnected = false;
+                document.getElementById('hw-status').classList.remove('connected');
+                document.getElementById('hw-label').textContent = 'HW ERROR';
+                hwSource.close();
+                hwSource = null;
+            };
+        } catch (e) {
+            console.error('Telemetry connection failed:', e);
+        }
+    }
+
+    function disconnectTelemetry() {
+        if (hwSource) { hwSource.close(); hwSource = null; }
+        hwConnected = false;
+        document.getElementById('hw-status').classList.remove('connected');
+        document.getElementById('hw-label').textContent = 'HW OFFLINE';
+    }
+
+    function initHardwareCharts() {
+        const freqEl = document.getElementById('chart-hw-freq');
+        const powerEl = document.getElementById('chart-hw-power');
+        const tempEl = document.getElementById('chart-hw-temp');
+        if (!freqEl) return;
+
+        hwCharts.freq = echarts.init(freqEl);
+        hwCharts.power = echarts.init(powerEl);
+        hwCharts.temp = echarts.init(tempEl);
+
+        const baseOpt = (yName, yMin, yMax) => ({
+            grid: { left: 55, right: 15, top: 10, bottom: 25 },
+            xAxis: { type: 'category', data: [], axisLabel: { color: '#8892a8', fontSize: 9, interval: 29 }, axisLine: { lineStyle: { color: '#1a2540' } } },
+            yAxis: { type: 'value', name: yName, nameTextStyle: { color: '#3e4a63', fontSize: 9 }, min: yMin, max: yMax, axisLabel: { color: '#8892a8', fontSize: 9 }, splitLine: { lineStyle: { color: '#1a2540' } } },
+            series: [],
+        });
+
+        hwCharts.freq.setOption(baseOpt('MHz', 1000, 2200));
+        hwCharts.power.setOption(baseOpt('W', 0, null));
+        hwCharts.temp.setOption(baseOpt('\u00b0C', 30, 100));
+
+        window.addEventListener('resize', () => {
+            Object.values(hwCharts).forEach(c => { if (c) c.resize(); });
+        });
+    }
+
+    function updateHardwareCharts(d) {
+        if (!hwCharts.freq) return;
+        const gpuIds = Object.keys(hwData.freq).sort((a,b) => a - b);
+        const src = d.source === 'amdsmi' ? 'AMD SMI' : 'mock';
+
+        function makeSeries(metric) {
+            return gpuIds.map((id, i) => ({
+                name: 'GPU ' + id,
+                type: 'line', smooth: true, showSymbol: false,
+                data: hwData[metric][id],
+                lineStyle: { width: 1.5, color: GPU_COLORS[i % GPU_COLORS.length] },
+                itemStyle: { color: GPU_COLORS[i % GPU_COLORS.length] },
+            }));
+        }
+
+        const tagSuffix = src + ' // ' + gpuIds.length + ' GPUs';
+        const freqTag = document.getElementById('hw-freq-tag');
+        const powerTag = document.getElementById('hw-power-tag');
+        const tempTag = document.getElementById('hw-temp-tag');
+        if (freqTag) freqTag.textContent = tagSuffix;
+        if (powerTag) powerTag.textContent = tagSuffix;
+        if (tempTag) tempTag.textContent = tagSuffix;
+
+        hwCharts.freq.setOption({ xAxis: { data: hwData.timestamps }, series: makeSeries('freq') });
+        hwCharts.power.setOption({ xAxis: { data: hwData.timestamps }, series: makeSeries('power') });
+        hwCharts.temp.setOption({ xAxis: { data: hwData.timestamps }, series: makeSeries('temp') });
     }
 
     init();
