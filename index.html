@@ -287,6 +287,30 @@
                 </div>
             </div>
 
+            <!-- MI325 Experiment Comparison (Lit Silicon) -->
+            <div class="hw-section-title">AMD MI325 EXPERIMENT COMPARISON // LIT SILICON</div>
+            <div class="kpi-strip" id="mi325-kpi"></div>
+            <div class="panel-grid" id="mi325-panels">
+                <div class="panel">
+                    <div class="panel-title">Straggler s-value by Experiment <span class="tag">lower = less straggling</span></div>
+                    <div class="hw-chart-container" id="chart-mi325-straggler"></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-title">GPU Frequency Comparison <span class="tag">per experiment, per GPU</span></div>
+                    <div class="hw-chart-container" id="chart-mi325-freq"></div>
+                </div>
+            </div>
+            <div class="panel-grid" id="mi325-panels-2">
+                <div class="panel">
+                    <div class="panel-title">Power Distribution <span class="tag">avg watts per GPU</span></div>
+                    <div class="hw-chart-container" id="chart-mi325-power"></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-title">Thermal Spread <span class="tag">temperature range per experiment</span></div>
+                    <div class="hw-chart-container" id="chart-mi325-thermal"></div>
+                </div>
+            </div>
+
             <!-- Live Hardware Telemetry (Chopper Integration) -->
             <div class="hw-section-title" id="hw-section-title">LIVE HARDWARE TELEMETRY // CHOPPER</div>
 
@@ -331,6 +355,7 @@
             renderTokenChart();
             renderFailureChart();
             initHardwareCharts();
+            loadMI325Data();
         }, 50);
     }
 
@@ -706,6 +731,147 @@
             ]
         });
         window.addEventListener('resize', () => chart.resize());
+    }
+
+    // ═══════════════════════════════════════════════
+    // MI325 EXPERIMENT COMPARISON (Lit Silicon)
+    // ═══════════════════════════════════════════════
+    async function loadMI325Data() {
+        try {
+            const resp = await fetch('mi325_report.json');
+            if (!resp.ok) return;
+            const data = await resp.json();
+            if (!data.experiments || data.experiments.length === 0) return;
+            renderMI325KPIs(data.experiments);
+            renderMI325Charts(data.experiments);
+        } catch (e) { /* mi325_report.json not available */ }
+    }
+
+    function renderMI325KPIs(experiments) {
+        const kpiEl = document.getElementById('mi325-kpi');
+        if (!kpiEl) return;
+        kpiEl.innerHTML = experiments.map(exp => {
+            const s = exp.straggler || {};
+            return `<div class="kpi">
+                <div class="kpi-label">${exp.experiment.replace(/_/g,' ').toUpperCase()}</div>
+                <div class="kpi-value" style="color:var(--accent-cyan)">${(exp.duration_s/60).toFixed(1)}m</div>
+                <div class="kpi-sub">straggler: GPU ${s.straggler_gpu || '?'} (s=${(s.max_s_value||0).toFixed(3)})</div>
+            </div>`;
+        }).join('');
+    }
+
+    function renderMI325Charts(experiments) {
+        const EXP_COLORS = ['#ff6b2b','#22d3ee','#34d399','#f5a623'];
+
+        // Straggler comparison bar chart
+        const stragglerEl = document.getElementById('chart-mi325-straggler');
+        if (stragglerEl) {
+            const chart = echarts.init(stragglerEl);
+            const names = experiments.map(e => e.experiment.replace(/_/g,' '));
+            const gpuIds = experiments[0].straggler.s_values ? Object.keys(experiments[0].straggler.s_values) : [];
+
+            const series = experiments.map((exp, i) => ({
+                name: names[i],
+                type: 'bar',
+                data: gpuIds.map(g => (exp.straggler.s_values || {})[g] || 0),
+                itemStyle: { color: EXP_COLORS[i] },
+                barWidth: 10,
+            }));
+
+            chart.setOption({
+                tooltip: { trigger: 'axis' },
+                legend: { data: names, textStyle: { color: '#8892a8', fontSize: 10 }, bottom: 0 },
+                grid: { left: 50, right: 15, top: 10, bottom: 40 },
+                xAxis: { type: 'category', data: gpuIds.map(g => 'GPU ' + g), axisLabel: { color: '#8892a8' } },
+                yAxis: { type: 'value', name: 's-value', nameTextStyle: { color: '#3e4a63', fontSize: 9 }, axisLabel: { color: '#8892a8', fontSize: 9 }, splitLine: { lineStyle: { color: '#1a2540' } } },
+                series: series,
+            });
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // Frequency comparison
+        const freqEl = document.getElementById('chart-mi325-freq');
+        if (freqEl) {
+            const chart = echarts.init(freqEl);
+            const series = experiments.map((exp, i) => {
+                const timeline = exp.freq_timeline || {};
+                const gpuKeys = Object.keys(timeline);
+                if (gpuKeys.length === 0) return null;
+                const gpu0 = timeline[gpuKeys[0]];
+                return {
+                    name: exp.experiment.replace(/_/g,' '),
+                    type: 'line', smooth: true, showSymbol: false,
+                    data: gpu0.gfxclk || [],
+                    lineStyle: { width: 1.5, color: EXP_COLORS[i] },
+                    itemStyle: { color: EXP_COLORS[i] },
+                };
+            }).filter(Boolean);
+
+            const maxLen = Math.max(...series.map(s => s.data.length));
+            const xData = Array.from({length: maxLen}, (_, i) => Math.round(i * (experiments[0].duration_s / maxLen)) + 's');
+
+            chart.setOption({
+                tooltip: { trigger: 'axis' },
+                legend: { data: series.map(s => s.name), textStyle: { color: '#8892a8', fontSize: 10 }, bottom: 0 },
+                grid: { left: 55, right: 15, top: 10, bottom: 40 },
+                xAxis: { type: 'category', data: xData, axisLabel: { color: '#8892a8', fontSize: 9, interval: Math.floor(maxLen/6) } },
+                yAxis: { type: 'value', name: 'MHz', min: 1000, nameTextStyle: { color: '#3e4a63', fontSize: 9 }, axisLabel: { color: '#8892a8', fontSize: 9 }, splitLine: { lineStyle: { color: '#1a2540' } } },
+                series: series,
+            });
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // Power distribution
+        const powerEl = document.getElementById('chart-mi325-power');
+        if (powerEl) {
+            const chart = echarts.init(powerEl);
+            const names = experiments.map(e => e.experiment.replace(/_/g,' '));
+            const gpuIds = Object.keys(experiments[0].power || {});
+
+            const series = experiments.map((exp, i) => ({
+                name: names[i],
+                type: 'bar',
+                data: gpuIds.map(g => (exp.power[g] || {}).mean_w || 0),
+                itemStyle: { color: EXP_COLORS[i] },
+                barWidth: 10,
+            }));
+
+            chart.setOption({
+                tooltip: { trigger: 'axis' },
+                legend: { data: names, textStyle: { color: '#8892a8', fontSize: 10 }, bottom: 0 },
+                grid: { left: 50, right: 15, top: 10, bottom: 40 },
+                xAxis: { type: 'category', data: gpuIds.map(g => 'GPU ' + g), axisLabel: { color: '#8892a8' } },
+                yAxis: { type: 'value', name: 'Watts', nameTextStyle: { color: '#3e4a63', fontSize: 9 }, axisLabel: { color: '#8892a8', fontSize: 9 }, splitLine: { lineStyle: { color: '#1a2540' } } },
+                series: series,
+            });
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        // Thermal spread
+        const thermalEl = document.getElementById('chart-mi325-thermal');
+        if (thermalEl) {
+            const chart = echarts.init(thermalEl);
+            const names = experiments.map(e => e.experiment.replace(/_/g,' '));
+            const gpuIds = Object.keys(experiments[0].thermal?.per_gpu || {});
+
+            const series = experiments.map((exp, i) => ({
+                name: names[i],
+                type: 'bar',
+                data: gpuIds.map(g => (exp.thermal?.per_gpu?.[g] || {}).mean_c || 0),
+                itemStyle: { color: EXP_COLORS[i] },
+                barWidth: 10,
+            }));
+
+            chart.setOption({
+                tooltip: { trigger: 'axis' },
+                legend: { data: names, textStyle: { color: '#8892a8', fontSize: 10 }, bottom: 0 },
+                grid: { left: 50, right: 15, top: 10, bottom: 40 },
+                xAxis: { type: 'category', data: gpuIds.map(g => 'GPU ' + g), axisLabel: { color: '#8892a8' } },
+                yAxis: { type: 'value', name: '\u00b0C', min: 50, nameTextStyle: { color: '#3e4a63', fontSize: 9 }, axisLabel: { color: '#8892a8', fontSize: 9 }, splitLine: { lineStyle: { color: '#1a2540' } } },
+                series: series,
+            });
+            window.addEventListener('resize', () => chart.resize());
+        }
     }
 
     // ═══════════════════════════════════════════════

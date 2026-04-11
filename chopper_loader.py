@@ -31,10 +31,30 @@ except ImportError:
     sys.exit(1)
 
 
+def load_gpu_data(filepath):
+    """Load Chopper gpu data from pkl or CSV."""
+    path = Path(filepath)
+    if path.suffix == ".csv":
+        # Only read the numeric columns we need — skip problematic string columns
+        key_cols = [
+            "ts", "gpu", "current_gfxclk", "current_uclk",
+            "current_socket_power", "temperature_hotspot", "temperature_edge",
+            "temperature_mem", "average_gfx_activity", "average_umc_activity",
+            "average_socket_power", "voltage_gfx", "voltage_mem",
+            "average_gfxclk_frequency", "average_uclk_frequency",
+        ]
+        # Read header to find which columns exist
+        header = pd.read_csv(filepath, nrows=0).columns.tolist()
+        usecols = [c for c in key_cols if c in header]
+        df = pd.read_csv(filepath, usecols=usecols)
+    else:
+        df = pd.read_pickle(filepath)
+    return df
+
+
 def load_gpu_pkl(filepath):
     """Load Chopper gpu.pkl and return DataFrame."""
-    df = pd.read_pickle(filepath)
-    return df
+    return load_gpu_data(filepath)
 
 
 def compute_straggler_analysis(df):
@@ -172,8 +192,8 @@ def compute_power_timeline(df):
 
 
 def pkl_to_report(filepath):
-    """Convert a single gpu.pkl to a full analysis report."""
-    df = load_gpu_pkl(filepath)
+    """Convert a single gpu.pkl or gpu.csv to a full analysis report."""
+    df = load_gpu_data(filepath)
 
     gpu_ids = sorted(df["gpu"].unique())
     min_ts = df["ts"].min()
@@ -203,7 +223,7 @@ def main():
     )
     parser.add_argument(
         "pkl_files", nargs="+",
-        help="Path(s) to gpu.pkl file(s)"
+        help="Path(s) to gpu.pkl or gpu.csv file(s)"
     )
     parser.add_argument(
         "-o", "--output", default="chopper_report.json",
