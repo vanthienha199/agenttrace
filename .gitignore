@@ -1,3 +1,6 @@
 .DS_Store
 __pycache__/
 *.pyc
+mi325_data/
+mi325_report.json
+chopper_report.json
